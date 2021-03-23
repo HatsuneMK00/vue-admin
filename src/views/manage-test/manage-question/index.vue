@@ -8,43 +8,76 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
+      <el-table-column align="center" label="题目ID" width="95">
         <template slot-scope="scope">
           {{ scope.$index }}
         </template>
       </el-table-column>
-      <el-table-column label="Title">
+      <el-table-column label="题目描述">
         <template slot-scope="scope">
           {{ scope.row.title }}
         </template>
       </el-table-column>
-      <el-table-column label="Author" width="110" align="center">
+      <el-table-column label="题目答案">
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          {{ scope.row.title }}
         </template>
       </el-table-column>
-      <el-table-column label="Pageviews" width="110" align="center">
+      <el-table-column label="题目分值" width="110" align="center">
         <template slot-scope="scope">
           {{ scope.row.pageviews }}
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="Status" width="110" align="center">
+      <el-table-column label="题目标签" width="110" align="center">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
+          {{ scope.row.pageviews }}
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="Display_time" width="200">
+      <el-table-column label="题型" width="110" align="center">
         <template slot-scope="scope">
-          <i class="el-icon-time" />
-          <span>{{ scope.row.display_time }}</span>
+          {{ scope.row.pageviews }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" prop="created_at" label="操作" width="200">
+        <template slot-scope="scope">
+          <el-button-group>
+            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.$index, scope.$index)" />
+            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.$index, scope.$index)" />
+          </el-button-group>
         </template>
       </el-table-column>
     </el-table>
+    <el-dialog
+      :visible="wordsDialogVisible"
+      :title="wordsDialogTitle"
+      width="50%"
+      center
+    >
+      <el-form :model="form">
+        <el-form-item label="题目描述" label-width="120px">
+          <el-input v-model="form.questionDescription" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="题目回答" label-width="120px">
+          <el-input v-model="form.questionAnswer" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="题目标签" label-width="120px">
+          <el-input v-model="form.questionTag" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="wordsDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="wordsDialogVisible = false">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import { getList } from '@/api/table'
+import { deleteQuestionById } from '@/api/test'
 
 export default {
   filters: {
@@ -60,7 +93,14 @@ export default {
   data() {
     return {
       list: null,
-      listLoading: true
+      listLoading: true,
+      wordsDialogVisible: false,
+      wordsDialogTitle: '',
+      form: {
+        questionDescription: '',
+        questionAnswer: '',
+        questionTag: ''
+      }
     }
   },
   created() {
@@ -73,6 +113,25 @@ export default {
         this.list = response.data.items
         this.listLoading = false
       })
+    },
+    onDeleteClicked(case_id, case_index) {
+      deleteQuestionById(case_id).then(response => {
+        // if (response.data.result === 200) {
+        // eslint-disable-next-line no-constant-condition
+        if (true) {
+          console.log('delete question success')
+          this.list.splice(case_index, 1)
+        } else {
+          // console.log('删除失败')
+        }
+      })
+    },
+    onEditClicked(case_id, case_index) {
+      this.wordsDialogTitle = '编辑题目'
+      this.form.questionDescription = this.list[case_index].title
+      this.form.questionAnswer = this.list[case_index].title
+      this.form.questionTag = this.list[case_index].pageviews
+      this.wordsDialogVisible = true
     }
   }
 }
