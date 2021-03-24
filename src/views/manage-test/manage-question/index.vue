@@ -1,5 +1,8 @@
 <template>
   <div class="app-container">
+    <el-button type="primary" style="margin-bottom: 10px;" @click="onCreateNewClicked">新建<i
+      class="el-icon-plus el-icon--right"
+    /></el-button>
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -48,10 +51,11 @@
       </el-table-column>
     </el-table>
     <el-dialog
-      :visible="wordsDialogVisible"
-      :title="wordsDialogTitle"
+      :visible="wordsDialog.visible"
+      :title="wordsDialog.title"
       width="50%"
       center
+      @close="wordsDialog.visible = false"
     >
       <el-form :model="form">
         <el-form-item label="题目描述" label-width="120px">
@@ -66,8 +70,8 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="wordsDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="wordsDialogVisible = false">确 定</el-button>
+          <el-button @click="wordsDialog.visible = false">取 消</el-button>
+          <el-button type="primary" @click="wordsDialogConfirmOnClicked">确 定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -77,15 +81,18 @@
 
 <script>
 import { getList } from '@/api/table'
-import { deleteQuestionById } from '@/api/test/question'
+import { deleteQuestionById, submitWordsDialogResult } from '@/api/test/question'
 
 export default {
   data() {
     return {
       list: null,
       listLoading: true,
-      wordsDialogVisible: false,
-      wordsDialogTitle: '',
+      wordsDialog: {
+        visible: false,
+        title: '',
+        changeMode: 'add' // has two value: 'add' and 'update'
+      },
       form: {
         questionDescription: '',
         questionAnswer: '',
@@ -104,6 +111,15 @@ export default {
         this.listLoading = false
       })
     },
+    onCreateNewClicked() {
+      this.wordsDialog.title = '新增题目'
+      this.form.questionDescription = ''
+      this.form.questionAnswer = ''
+      this.form.questionTag = ''
+      this.wordsDialog.visible = true
+      this.wordsDialog.changeMode = 'add'
+
+    },
     onDeleteClicked(question_id, question_index) {
       deleteQuestionById(question_id).then(response => {
         // if (response.data.result === 200) {
@@ -117,11 +133,20 @@ export default {
       })
     },
     onEditClicked(question_id, question_index) {
-      this.wordsDialogTitle = '编辑题目'
+      this.wordsDialog.title = '编辑题目'
       this.form.questionDescription = this.list[question_index].title
       this.form.questionAnswer = this.list[question_index].title
       this.form.questionTag = this.list[question_index].pageviews
-      this.wordsDialogVisible = true
+      this.wordsDialog.visible = true
+      this.wordsDialog.changeMode = 'update'
+    },
+    wordsDialogConfirmOnClicked() {
+      const params = {
+        changeMode: this.wordsDialog.changeMode
+      }
+      submitWordsDialogResult(params).then(response => {
+        this.wordsDialog.visible = false
+      })
     }
   }
 }
