@@ -1,5 +1,8 @@
 <template>
   <div class="app-container">
+    <el-button type="primary" style="margin-bottom: 10px;" @click="onCreateNewClicked">新建<i
+      class="el-icon-plus el-icon--right"
+    /></el-button>
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -49,10 +52,11 @@
     </el-table>
 
     <el-dialog
-      :visible="wordsDialogVisible"
-      :title="wordsDialogTitle"
+      :visible="wordsDialog.visible"
+      :title="wordsDialog.title"
       width="50%"
       center
+      @close="wordsDialog.visible = false"
     >
       <el-form :model="form">
         <el-form-item label="试卷名称" label-width="120px">
@@ -73,8 +77,8 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="wordsDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="wordsDialogVisible = false">确 定</el-button>
+          <el-button @click="wordsDialog.visible = false">取 消</el-button>
+          <el-button type="primary" @click="wordsDilogComfirmOnClick">确 定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -83,15 +87,18 @@
 
 <script>
 import { getList } from '@/api/table'
-import { deletePaperById } from '@/api/test/paper'
+import { deletePaperById, submitWordsDialogResult } from '@/api/test/paper'
 
 export default {
   data() {
     return {
       list: null,
       listLoading: true,
-      wordsDialogVisible: false,
-      wordsDialogTitle: '',
+      wordsDialog: {
+        visible: false,
+        title: '',
+        changeMode: 'add' // has two value: 'add' and 'update'
+      },
       form: {
         paperName: '',
         paperSelectNum: 0,
@@ -112,6 +119,16 @@ export default {
         this.listLoading = false
       })
     },
+    onCreateNewClicked() {
+      this.wordsDialog.title = '新增试卷'
+      this.form.paperName = ''
+      this.form.paperSelectNum = 0
+      this.form.paperJudgeNum = 0
+      this.form.paperQaNum = 0
+      this.form.duration = 0
+      this.wordsDialog.visible = true
+      this.wordsDialog.changeMode = 'add'
+    },
     onDeleteClicked(paper_id, paper_index) {
       deletePaperById(paper_id).then(response => {
         // if (response.data.result === 200) {
@@ -125,13 +142,22 @@ export default {
       })
     },
     onEditClicked(paper_id, paper_index) {
-      this.wordsDialogTitle = '编辑试卷'
+      this.wordsDialog.title = '编辑试卷'
       this.form.paperName = this.list[paper_index].title
       this.form.paperSelectNum = this.list[paper_index].pageviews
       this.form.paperJudgeNum = this.list[paper_index].pageviews
       this.form.paperQaNum = this.list[paper_index].pageviews
       this.form.duration = this.list[paper_index].pageviews
-      this.wordsDialogVisible = true
+      this.wordsDialog.visible = true
+      this.wordsDialog.changeMode = 'update'
+    },
+    wordsDialogConfirmOnClicked() {
+      const params = {
+        changeMode: this.wordsDialog.changeMode
+      }
+      submitWordsDialogResult(params).then(response => {
+        this.wordsDialog.visible = false
+      })
     }
   }
 }
