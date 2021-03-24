@@ -77,19 +77,9 @@
 
 <script>
 import { getList } from '@/api/table'
-import { deleteQuestionById } from '@/api/test'
+import { deleteQuestionById } from '@/api/test/question'
 
 export default {
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'gray',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    }
-  },
   data() {
     return {
       list: null,
@@ -114,23 +104,23 @@ export default {
         this.listLoading = false
       })
     },
-    onDeleteClicked(case_id, case_index) {
-      deleteQuestionById(case_id).then(response => {
+    onDeleteClicked(question_id, question_index) {
+      deleteQuestionById(question_id).then(response => {
         // if (response.data.result === 200) {
         // eslint-disable-next-line no-constant-condition
         if (true) {
           console.log('delete question success')
-          this.list.splice(case_index, 1)
+          this.list.splice(question_index, 1)
         } else {
           // console.log('删除失败')
         }
       })
     },
-    onEditClicked(case_id, case_index) {
+    onEditClicked(question_id, question_index) {
       this.wordsDialogTitle = '编辑题目'
-      this.form.questionDescription = this.list[case_index].title
-      this.form.questionAnswer = this.list[case_index].title
-      this.form.questionTag = this.list[case_index].pageviews
+      this.form.questionDescription = this.list[question_index].title
+      this.form.questionAnswer = this.list[question_index].title
+      this.form.questionTag = this.list[question_index].pageviews
       this.wordsDialogVisible = true
     }
   }
