@@ -64,8 +64,29 @@
         <el-form-item label="题目回答" label-width="120px">
           <el-input v-model="form.questionAnswer" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="题型" label-width="120px">
+          <el-radio-group v-model="radio" size="small" @change="curType">
+            <el-radio-button label="选择题"></el-radio-button>
+            <el-radio-button label="判断题"></el-radio-button>
+            <el-radio-button label="问答题"></el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="分值" label-width="120px">
+          <el-input v-model="form.questionTag" autocomplete="off" />
+        </el-form-item>
         <el-form-item label="题目标签" label-width="120px">
           <el-input v-model="form.questionTag" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="试题图片" label-width="120px">
+          <el-upload
+            class="upload-demo"
+            drag
+            action="https://jsonplaceholder.typicode.com/posts/"
+            multiple>
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -97,7 +118,9 @@ export default {
         questionDescription: '',
         questionAnswer: '',
         questionTag: ''
-      }
+      },
+      radio: '选择题',
+      selectValue: ''
     }
   },
   created() {
@@ -147,6 +170,9 @@ export default {
       submitWordsDialogResult(params).then(response => {
         this.wordsDialog.visible = false
       })
+    },
+    curType(selectValue) {
+      this.selectValue = selectValue
     }
   }
 }
