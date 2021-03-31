@@ -1,13 +1,61 @@
 import request from '@/utils/request'
+import request_admin from "@/utils/request_admin";
 
-export function getUserList(params) {
-  return request({
-    url: '/user',
-    method: 'get',
-    params
+export function getUserList() {
+  return request_admin({
+    url: '/admin/user/getNormal',
+    method: 'get'
+
   })
 }
+export function getAdminList() {
+  return request_admin({
+    url: '/admin/user/getAdmins',
+    method: 'get'
 
+  })
+}
+export function getList() {
+  return request_admin({
+    url: '/admin/user/getAll',
+    method: 'get'
+  })
+}
+export function getUser(userId) {
+  return request_admin({
+    url: '/admin/user/getById',
+    method: 'get',
+    params: userId
+  })
+}
+export function newUser(user) {
+  return request_admin({
+    url: '/admin/user/newUser',
+    method: 'put',
+    data: user //user
+  })
+}
+export function updateUser(user) {
+  return request_admin({
+    url: '/admin/user/updateInfo',
+    method: 'post',
+    data: user // userId用于验证用户是否存在
+  })
+}
+export function deleteUser(userId) {
+  return request_admin({
+    url: '/admin/user/delete',
+    method: 'delete',
+    params: userId
+  })
+}
+export function changeRole(data) {
+  return request_admin({
+    url: '/admin/user/updateInfo',
+    method: 'post',
+    params: data // userId + role
+  })
+}
 export function login(data) {
   return request({
     url: '/vue-admin-template/user/login',
