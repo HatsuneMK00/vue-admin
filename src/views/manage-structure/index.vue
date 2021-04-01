@@ -59,8 +59,8 @@
       <el-table-column align="center" prop="created_at" label="操作" width="200">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.$index, scope.$index)" />
-            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.$index, scope.$index)" />
+            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.row.id, scope.$index)" />
+            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.row, scope.$index)" />
           </el-button-group>
         </template>
       </el-table-column>
@@ -230,11 +230,17 @@
       @close="hosDialog.visible = false"
     >
       <el-form :model="hosForm">
-        <el-form-item label="疫苗名" label-width="120px">
+        <el-form-item label="动物名" label-width="120px">
           <el-input v-model="hosForm.hosName" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="疫苗描述" label-width="120px">
+        <el-form-item label="病名" label-width="120px">
           <el-input v-model="hosForm.hosDesc" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="入院日期" label-width="120px">
+          <el-input v-model="hosForm.inDate" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="出院日期" label-width="120px">
+          <el-input v-model="hosForm.outDate" autocomplete="off" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -262,7 +268,13 @@ import {
   deleteVacById,
   submitVacDialogResult,
   deleteHosById,
-  submitHosDialogResult
+  submitHosDialogResult,
+  updateSection,
+  updateExam,
+  updateFee,
+  updateHospitalize,
+  updateMedicine,
+  updateVaccine
 } from '@/api/structure'
 
 export default {
@@ -298,7 +310,8 @@ export default {
         sectionName: '',
         recDesc: '',
         assissDesc: '',
-        docDesc: ''
+        docDesc: '',
+        sectionImageUrl: ''
       },
       sectionImageDialog: {
         visible: false,
@@ -365,7 +378,9 @@ export default {
         hosId: -1,
         hosIndex: -1,
         hosName: '',
-        hosDesc: ''
+        hosDesc: '',
+        inDate: '',
+        outDate: ''
       }
     }
   },
@@ -412,6 +427,8 @@ export default {
         this.hosDialog.title = '创建住院'
         this.hosForm.hosName = ''
         this.hosForm.hosDesc = ''
+        this.hosForm.inDate = ''
+        this.hosForm.outDate = ''
         this.hosDialog.changeMode = 'add'
       }
     },
@@ -424,6 +441,7 @@ export default {
         this.secForm.recDesc = this.list[edit_index].description1
         this.secForm.assissDesc = this.list[edit_index].description2
         this.secForm.docDesc = this.list[edit_index].description3
+        this.secForm.sectionImageUrl = this.list[edit_index].description4
         this.sectionWordsDialog.changeMode = 'update'
         this.sectionWordsDialog.visible = true
       } else if (this.tag === '药品管理') {
@@ -461,82 +479,88 @@ export default {
         this.vacDialog.changeMode = 'update'
       } else if (this.tag === '住院管理') {
         this.hosDialog.visible = true
-        this.hosDialog.title = '编辑疫苗'
+        this.hosDialog.title = '编辑住院信息'
         this.hosForm.hosId = edit_id
         this.hosForm.hosIndex = edit_index
         this.hosForm.hosName = this.list[edit_index].name
         this.hosForm.hosDesc = this.list[edit_index].description1
+        this.hosForm.inDate = this.list[edit_index].description2
+        this.hosForm.outDate = this.list[edit_index].description3
         this.hosDialog.changeMode = 'update'
       }
     },
-    onDeleteClicked(del_id, del_index) {
-      if (this.tag === '科室管理') {
-        deleteSectionById(del_id).then(response => {
-          // if (response.data.result === 200) {
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            console.log(this.list)
-            this.list.splice(del_index, 1)
-          } else {
-            // console.log('删除失败')
+    onDeleteClicked(row, del_index) {
+      console.log(del_index)
+      this.$confirm('此操作将永久删除此记录，是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (this.tag === '科室管理') {
+          const params = {
+            sectionId: row.id
           }
-        })
-      } else if (this.tag === '药品管理') {
-        deleteMedicineById(del_id).then(response => {
-          // if (response.data.result === 200) {
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            console.log(this.list)
+          deleteSectionById(params).then(response => {
+            console.log(response)
+            console.log(params)
             this.list.splice(del_index, 1)
-          } else {
-            // console.log('删除失败')
+          })
+        } else if (this.tag === '药品管理') {
+          const params = {
+            medId: row.id
           }
-        })
-      } else if (this.tag === '收费管理') {
-        deleteFeeById(del_id).then(response => {
-          // if (response.data.result === 200) {
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            console.log(this.list)
+          deleteMedicineById(params).then(response => {
+            console.log(response)
+            console.log(params)
             this.list.splice(del_index, 1)
-          } else {
-            // console.log('删除失败')
+          })
+        } else if (this.tag === '收费管理') {
+          const params = {
+            feeId: row.id
           }
-        })
-      } else if (this.tag === '化验项目管理') {
-        deleteExamById(del_id).then(response => {
-          // if (response.data.result === 200) {
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            console.log(this.list)
+          deleteFeeById(params).then(response => {
+            console.log(response)
+            console.log(params)
             this.list.splice(del_index, 1)
-          } else {
-            // console.log('删除失败')
+          })
+        } else if (this.tag === '化验项目管理') {
+          const params = {
+            examId: row.id
           }
-        })
-      } else if (this.tag === '疫苗管理') {
-        deleteVacById(del_id).then(response => {
-          // if (response.data.result === 200) {
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            console.log(this.list)
+          deleteExamById(params).then(response => {
+            console.log(response)
+            console.log(params)
             this.list.splice(del_index, 1)
-          } else {
-            // console.log('删除失败')
+          })
+        } else if (this.tag === '疫苗管理') {
+          const params = {
+            vacId: row.id
           }
-        })
-      } else if (this.tag === '住院管理') {
-        deleteHosById(del_id).then(response => {
-          // if (response.data.result === 200) {
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            console.log(this.list)
+          deleteVacById(params).then(response => {
+            console.log(response)
+            console.log(params)
             this.list.splice(del_index, 1)
-          } else {
-            // console.log('删除失败')
+          })
+        } else if (this.tag === '住院管理') {
+          const params = {
+            hosId: row.id
           }
+          deleteHosById(params).then(response => {
+            console.log(response)
+            console.log(params)
+            this.list.splice(del_index, 1)
+          })
+        }
+        this.$message({
+          type: 'success',
+          message: '删除成功！'
         })
-      }
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     },
     onImageClicked(case_id, image_urls) {
       this.sectionImageDialog.visible = true
@@ -552,11 +576,11 @@ export default {
     sectionWordsDialogConfirmOnClicked() {
       const params = {
         sectionId: this.secForm.sectionId,
-        sectionIndex: this.secForm.sectionIndex,
         sectionName: this.secForm.sectionName,
-        recDesc: this.secForm.recDesc,
-        docDesc: this.secForm.docDesc,
-        assissDesc: this.secForm.assissDesc,
+        recDescrip: this.secForm.recDesc,
+        docDescrip: this.secForm.docDesc,
+        assisDescrip: this.secForm.assissDesc,
+        sectionImageUrl: this.secForm.sectionImageUrl,
         changeMode: this.sectionWordsDialog.changeMode
       }
       submitSectionWordsDialogResult(params).then(response => {
@@ -566,8 +590,21 @@ export default {
           if (sectionIndex != null && sectionIndex >= 0) {
             this.list[sectionIndex].name = this.secForm.sectionName
             this.list[sectionIndex].description1 = this.secForm.recDesc
-            this.list[sectionIndex].description3 = this.secForm.docDesc
             this.list[sectionIndex].description2 = this.secForm.assissDesc
+            this.list[sectionIndex].description3 = this.secForm.docDesc
+            this.list[sectionIndex].description4 = this.secForm.sectionImageUrl
+            const sectionId = params.sectionId
+            const temp = {
+              sectionId: this.secForm.sectionId,
+              sectionName: this.secForm.sectionName,
+              recDescrip: this.secForm.recDesc,
+              docDescrip: this.secForm.docDesc,
+              assisDescrip: this.secForm.assissDesc,
+              sectionImageUrl: this.secForm.sectionImageUrl
+            }
+            updateSection(sectionId, temp).then(response => {
+              console.log('updated section' + temp)
+            })
           }
         } else if (changeMode === 'add') {
           this.list.push(
@@ -576,8 +613,7 @@ export default {
               name: this.secForm.sectionName,
               description1: this.secForm.recDesc,
               description2: this.secForm.assissDesc,
-              description3: this.secForm.docDesc,
-              description4: ''
+              description3: this.secForm.docDesc
             }
           )
         }
@@ -595,8 +631,17 @@ export default {
       submitMedicineDialogResult(params).then(response => {
         const medicineIndex = this.medForm.medIndex
         const changeMode = this.medicineDialog.changeMode
+        const medId = this.medForm.medId
         if (changeMode === 'update') {
           if (medicineIndex != null && medicineIndex >= 0) {
+            const temp = {
+              medId: this.medForm.medId,
+              medName: this.medForm.medName,
+              medDescrip: this.medForm.medDesc
+            }
+            updateMedicine(medId, temp).then(response => {
+              console.log('updated medicine' + temp)
+            })
             this.list[medicineIndex].name = this.medForm.medName
             this.list[medicineIndex].description1 = this.medForm.medDesc
           }
@@ -624,11 +669,21 @@ export default {
       submitFeeDialogResult(params).then(response => {
         const feeIndex = this.feeForm.feeIndex
         const changeMode = this.feeDialog.changeMode
+        const feeId = this.feeForm.feeId
+        const temp = {
+          feeId: this.feeForm.feeId,
+          feeName: this.feeForm.feeName,
+          feePrice: this.feeForm.price,
+          feeDescrip: this.feeForm.feeDesc
+        }
         if (changeMode === 'update') {
           if (feeIndex != null && feeIndex >= 0) {
             this.list[feeIndex].name = this.feeForm.feeName
             this.list[feeIndex].description1 = this.feeForm.price
             this.list[feeIndex].description2 = this.feeForm.feeDesc
+            updateFee(feeId, temp).then(response => {
+              console.log('updated fee' + temp)
+            })
           }
         } else if (changeMode === 'add') {
           this.list.push(
@@ -654,10 +709,19 @@ export default {
       submitExamDialogResult(params).then(response => {
         const examIndex = this.examForm.examIndex
         const changeMode = this.examDialog.changeMode
+        const examId = this.examForm.examId
+        const temp = {
+          examId: this.examForm.examId,
+          examName: this.examForm.examName,
+          examDescrip: this.examForm.examDesc
+        }
         if (changeMode === 'update') {
           if (examIndex != null && examIndex >= 0) {
             this.list[examIndex].name = this.examForm.examName
             this.list[examIndex].description1 = this.examForm.examDesc
+            updateExam(examId, temp).then(response => {
+              console.log('updated examination' + temp)
+            })
           }
         } else if (changeMode === 'add') {
           this.list.push(
@@ -682,10 +746,19 @@ export default {
       submitVacDialogResult(params).then(response => {
         const vacIndex = this.vacForm.vacIndex
         const changeMode = this.vacDialog.changeMode
+        const vacId = this.vacForm.vacId
+        const temp = {
+          vacId: this.vacForm.vacId,
+          vacName: this.vacForm.vacName,
+          vacDescrip: this.vacForm.vacDesc
+        }
         if (changeMode === 'update') {
           if (vacIndex != null && vacIndex >= 0) {
             this.list[vacIndex].name = this.vacForm.vacName
             this.list[vacIndex].description1 = this.vacForm.vacDesc
+            updateVaccine(vacId, temp).then(response => {
+              console.log('updated vaccine' + temp)
+            })
           }
         } else if (changeMode === 'add') {
           this.list.push(
@@ -705,22 +778,39 @@ export default {
         hosIndex: this.hosForm.hosIndex,
         hosName: this.hosForm.hosName,
         hosDesc: this.hosForm.hosDesc,
+        inDate: this.hosForm.inDate,
+        outDate: this.hosForm.outDate,
         changeMode: this.hosDialog.changeMode
       }
       submitHosDialogResult(params).then(response => {
         const hosIndex = this.hosForm.hosIndex
         const changeMode = this.hosDialog.changeMode
+        const hosId = this.hosForm.hosId
+        const temp = {
+          hosId: this.hosForm.hosId,
+          hosAnimalName: this.hosForm.hosName,
+          disease: this.hosForm.hosDesc,
+          inDate: this.hosForm.inDate,
+          outDate: this.hosForm.outDate
+        }
         if (changeMode === 'update') {
           if (hosIndex != null && hosIndex >= 0) {
             this.list[hosIndex].name = this.hosForm.hosName
             this.list[hosIndex].description1 = this.hosForm.hosDesc
+            this.list[hosIndex].description2 = this.hosForm.inDate
+            this.list[hosIndex].description3 = this.hosForm.outDate
+            updateHospitalize(hosId, temp).then(response => {
+              console.log(temp)
+            })
           }
         } else if (changeMode === 'add') {
           this.list.push(
             {
               id: 55,
               name: this.hosForm.hosName,
-              description1: this.hosForm.hosDesc
+              description1: this.hosForm.hosDesc,
+              description2: this.hosForm.inDate,
+              description3: this.hosForm.outDate
             }
           )
         }
@@ -747,67 +837,38 @@ export default {
         this.column5 = '医师功能描述'
         this.column6 = '科室图片'
         getStructureInfo(command).then(response => {
-          this.list = [
-            {
-              id: 1,
-              name: '档案室',
-              description1: '前台的档案室',
-              description2: '医助的档案室',
-              description3: '医师的档案室',
-              description4: 'image'
-            },
-            {
-              id: 2,
-              name: '免疫室',
-              description1: '前台的免疫室',
-              description2: '医助的免疫室',
-              description3: '医师的免疫室',
-              description4: 'image'
-            },
-            {
-              id: 3,
-              name: '化验室',
-              description1: '前台的化验室',
-              description2: '医助的化验室',
-              description3: '医师的化验室',
-              description4: 'image'
-            }
-          ]
+          const resultList = response.data.responseMap.result
+          console.log(resultList)
+          const tempList = []
+          for (let i = 0; i < resultList.length; i++) {
+            tempList.push({
+              id: resultList[i].sectionId,
+              name: resultList[i].sectionName,
+              description1: resultList[i].recDescrip,
+              description2: resultList[i].assisDescrip,
+              description3: resultList[i].docDescrip,
+              description4: resultList[i].sectionImageUrl
+            })
+          }
+          this.list = tempList
         })
       } else if (command === 'medicine') {
         this.tag = '药品管理'
         this.column1 = '药品ID'
         this.column2 = '药品名'
         this.column3 = '功能描述'
-        this.column5 = ''
-        this.column6 = ''
         getStructureInfo(command).then(response => {
-          this.list = [
-            {
-              id: 1,
-              name: '阿莫西林',
-              description1: '这是阿莫西林',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 2,
-              name: '敌敌畏',
-              description1: '这是敌敌畏',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 3,
-              name: '维他命',
-              description1: '这是维他命',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            }
-          ]
+          const resultList = response.data.responseMap.result
+          console.log(resultList)
+          const tempList = []
+          for (let i = 0; i < resultList.length; i++) {
+            tempList.push({
+              id: resultList[i].medId,
+              name: resultList[i].medName,
+              description1: resultList[i].medDescrip
+            })
+          }
+          this.list = tempList
         })
       } else if (command === 'fee') {
         this.tag = '收费管理'
@@ -815,107 +876,55 @@ export default {
         this.column2 = '收费项目名'
         this.column3 = '价格'
         this.column4 = '收费描述'
-        this.column5 = ''
-        this.column6 = ''
         getStructureInfo(command).then(response => {
-          this.list = [
-            {
-              id: 1,
-              name: '打针',
-              description1: '50',
-              description2: '打针描述',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 2,
-              name: '验血',
-              description1: '25',
-              description2: '验血描述',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 3,
-              name: 'B超',
-              description1: '100',
-              description2: 'B超描述',
-              description3: 'null',
-              description4: 'null'
-            }
-          ]
+          const resultList = response.data.responseMap.result
+          console.log(resultList)
+          const tempList = []
+          for (let i = 0; i < resultList.length; i++) {
+            tempList.push({
+              id: resultList[i].feeId,
+              name: resultList[i].feeName,
+              description1: resultList[i].feePrice,
+              description2: resultList[i].feeDescrip
+            })
+          }
+          this.list = tempList
         })
       } else if (command === 'examination') {
         this.tag = '化验项目管理'
         this.column1 = '化验项目ID'
         this.column2 = '化验项目名'
         this.column3 = '化验描述'
-        this.column4 = ''
-        this.column5 = ''
-        this.column6 = ''
         getStructureInfo(command).then(response => {
-          this.list = [
-            {
-              id: 1,
-              name: '验血',
-              description1: '抽血验血',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 2,
-              name: '尿检',
-              description1: '撒尿验尿',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 3,
-              name: '尸检',
-              description1: '死亡验尸',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            }
-          ]
+          const resultList = response.data.responseMap.result
+          console.log(resultList)
+          const tempList = []
+          for (let i = 0; i < resultList.length; i++) {
+            tempList.push({
+              id: resultList[i].examId,
+              name: resultList[i].examName,
+              description1: resultList[i].examDescrip
+            })
+          }
+          this.list = tempList
         })
       } else if (command === 'vaccine') {
         this.tag = '疫苗管理'
         this.column1 = '疫苗ID'
         this.column2 = '疫苗名'
         this.column3 = '疫苗描述'
-        this.column4 = ''
-        this.column5 = ''
-        this.column6 = ''
         getStructureInfo(command).then(response => {
-          this.list = [
-            {
-              id: 1,
-              name: '天花疫苗',
-              description1: '防天花',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 2,
-              name: '新冠疫苗',
-              description1: '防新冠',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            },
-            {
-              id: 3,
-              name: '霍乱疫苗',
-              description1: '防霍乱',
-              description2: 'null',
-              description3: 'null',
-              description4: 'null'
-            }
-          ]
+          const resultList = response.data.responseMap.result
+          console.log(resultList)
+          const tempList = []
+          for (let i = 0; i < resultList.length; i++) {
+            tempList.push({
+              id: resultList[i].vacId,
+              name: resultList[i].vacName,
+              description1: resultList[i].vacDescrip
+            })
+          }
+          this.list = tempList
         })
       } else if (command === 'hospitalize') {
         this.tag = '住院管理'
@@ -924,34 +933,20 @@ export default {
         this.column3 = '病名'
         this.column4 = '入院日期'
         this.column5 = '出院日期'
-        this.column6 = ''
         getStructureInfo(command).then(response => {
-          this.list = [
-            {
-              id: 1,
-              name: '李明',
-              description1: '割包皮',
-              description2: '2010/1/1',
-              description3: '2010/1/8',
-              description4: 'null'
-            },
-            {
-              id: 2,
-              name: '李华',
-              description1: '鼻塞',
-              description2: '2018/2/1',
-              description3: '2018/2/29',
-              description4: 'null'
-            },
-            {
-              id: 3,
-              name: '小红',
-              description1: '便秘',
-              description2: '2022/5/5',
-              description3: '2077/9/1',
-              description4: 'null'
-            }
-          ]
+          const resultList = response.data.responseMap.result
+          console.log(resultList)
+          const tempList = []
+          for (let i = 0; i < resultList.length; i++) {
+            tempList.push({
+              id: resultList[i].hosId,
+              name: resultList[i].hosAnimalName,
+              description1: resultList[i].disease,
+              description2: resultList[i].inDate,
+              description3: resultList[i].outDate
+            })
+          }
+          this.list = tempList
         })
       }
     }

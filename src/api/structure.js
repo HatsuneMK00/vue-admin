@@ -1,11 +1,38 @@
 import request from '@/utils/request'
+import request_admin from '@/utils/request_admin'
 
-export function getStructureInfo(params) {
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
-  })
+export function getStructureInfo(command) {
+  if (command === 'section') {
+    return request_admin({
+      url: '/admin/structure/section',
+      method: 'get'
+    })
+  } else if (command === 'medicine') {
+    return request_admin({
+      url: '/admin/structure/medicine',
+      method: 'get'
+    })
+  } else if (command === 'fee') {
+    return request_admin({
+      url: '/admin/structure/fee',
+      method: 'get'
+    })
+  } else if (command === 'examination') {
+    return request_admin({
+      url: '/admin/structure/examination',
+      method: 'get'
+    })
+  } else if (command === 'vaccine') {
+    return request_admin({
+      url: '/admin/structure/vaccine',
+      method: 'get'
+    })
+  } else if (command === 'hospitalize') {
+    return request_admin({
+      url: '/admin/structure/hospitalize',
+      method: 'get'
+    })
+  }
 }
 
 export function getImageById(section_id) {
@@ -21,74 +48,50 @@ export function getImageById(section_id) {
 }
 
 export function deleteSectionById(section_id) {
-  const params = {
-    'section_id': section_id
-  }
-  // todo 修改api
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
+  return request_admin({
+    url: '/admin/structure/section',
+    method: 'delete',
+    params: section_id
   })
 }
 
 export function deleteMedicineById(medicine_id) {
-  const params = {
-    'medicine_id': medicine_id
-  }
-  // todo 修改api
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
+  return request_admin({
+    url: '/admin/structure/medicine',
+    method: 'delete',
+    params: medicine_id
   })
 }
 
 export function deleteFeeById(fee_id) {
-  const params = {
-    'fee_id': fee_id
-  }
-  // todo 修改api
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
+  return request_admin({
+    url: '/admin/structure/fee',
+    method: 'delete',
+    params: fee_id
   })
 }
 
 export function deleteExamById(exam_id) {
-  const params = {
-    'exam_id': exam_id
-  }
-  // todo 修改api
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
+  return request_admin({
+    url: '/admin/structure/examination',
+    method: 'delete',
+    params: exam_id
   })
 }
 
 export function deleteVacById(vac_id) {
-  const params = {
-    'vac_id': vac_id
-  }
-  // todo 修改api
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
+  return request_admin({
+    url: '/admin/structure/vaccine',
+    method: 'delete',
+    params: vac_id
   })
 }
 
 export function deleteHosById(hos_id) {
-  const params = {
-    'hos_id': hos_id
-  }
-  // todo 修改api
-  return request({
-    url: '/vue-admin-template/table/list',
-    method: 'get',
-    params
+  return request_admin({
+    url: '/admin/structure/hospitalize',
+    method: 'delete',
+    params: hos_id
   })
 }
 
@@ -112,6 +115,22 @@ export function submitSectionWordsDialogResult(params) {
   }
 }
 
+export function updateSection(sectionId, params) {
+  return request_admin({
+    url: '/admin/structure/section/' + sectionId,
+    method: 'post',
+    data: params
+  })
+}
+
+export function newSection(sectionId, params) {
+  return request_admin({
+    url: '/admin/structure/section',
+    method: 'put',
+    data: params
+  })
+}
+
 export function submitMedicineDialogResult(params) {
   if (params.changeMode != null) {
     if (params.changeMode === 'add') {
@@ -130,6 +149,14 @@ export function submitMedicineDialogResult(params) {
       })
     }
   }
+}
+
+export function updateMedicine(medId, params) {
+  return request_admin({
+    url: '/admin/structure/medicine/' + medId,
+    method: 'post',
+    data: params
+  })
 }
 
 export function submitFeeDialogResult(params) {
@@ -152,6 +179,14 @@ export function submitFeeDialogResult(params) {
   }
 }
 
+export function updateFee(feeId, params) {
+  return request_admin({
+    url: '/admin/structure/fee/' + feeId,
+    method: 'post',
+    data: params
+  })
+}
+
 export function submitExamDialogResult(params) {
   if (params.changeMode != null) {
     if (params.changeMode === 'add') {
@@ -170,6 +205,14 @@ export function submitExamDialogResult(params) {
       })
     }
   }
+}
+
+export function updateExam(examId, params) {
+  return request_admin({
+    url: '/admin/structure/examination/' + examId,
+    method: 'post',
+    data: params
+  })
 }
 
 export function submitVacDialogResult(params) {
@@ -192,6 +235,14 @@ export function submitVacDialogResult(params) {
   }
 }
 
+export function updateVaccine(vacId, params) {
+  return request_admin({
+    url: '/admin/structure/vaccine/' + vacId,
+    method: 'post',
+    data: params
+  })
+}
+
 export function submitHosDialogResult(params) {
   if (params.changeMode != null) {
     if (params.changeMode === 'add') {
@@ -210,5 +261,13 @@ export function submitHosDialogResult(params) {
       })
     }
   }
+}
+
+export function updateHospitalize(hosId, params) {
+  return request_admin({
+    url: '/admin/structure/hospitalize/' + hosId,
+    method: 'post',
+    data: params
+  })
 }
 
