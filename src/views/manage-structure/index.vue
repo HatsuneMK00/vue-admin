@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-dropdown @command="handleCommand">
       <el-button type="primary">
-        {{ tag }}<i class="el-icon-arrow-down el-icon--right"></i>
+        {{ tag }}<i class="el-icon-arrow-down el-icon--right" />
       </el-button>
       <el-button type="primary" style="margin-bottom: 10px;" align="right" @click="onCreateNewClicked">新建<i
         class="el-icon-plus el-icon--right"
@@ -66,6 +66,25 @@
       </el-table-column>
     </el-table>
     <el-dialog
+      :visible="addSectionDialog.visible"
+      :title="addSectionDialog.title"
+      width="50%"
+      center
+      @close="addSectionDialog.visible = false"
+    >
+      <el-form :model="addSectionForm">
+        <el-form-item label="科室名" label-width="120px">
+          <el-input v-model="addSectionForm.secName" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="addSectionDialog.visible = false">取 消</el-button>
+          <el-button type="primary" @click="addSectionDialogConfirmOnClicked">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <el-dialog
       :visible="sectionWordsDialog.visible"
       :title="sectionWordsDialog.title"
       width="50%"
@@ -104,7 +123,7 @@
         <el-image v-for="url in imageUrls" :key="url" :src="url" lazy>
           <template #error>
             <div class="image-slot">
-              <i class="el-icon-picture-outline"/>
+              <i class="el-icon-picture-outline" />
             </div>
           </template>
         </el-image>
@@ -223,6 +242,31 @@
       </template>
     </el-dialog>
     <el-dialog
+      :visible="addHosDialog.visible"
+      :title="addHosDialog.title"
+      width="50%"
+      center
+      @close="addHosDialog.visible = false"
+    >
+      <el-form :model="addHosForm">
+        <el-form-item label="动物名" label-width="120px">
+          <el-input v-model="addHosForm.hosAnimalName" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="病名" label-width="120px">
+          <el-input v-model="addHosForm.disease" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="入院日期" label-width="120px">
+          <el-input v-model="addHosForm.inDate" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="addHosDialog.visible = false">取 消</el-button>
+          <el-button type="primary" @click="addHosDialogConfirmOnClicked">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <el-dialog
       :visible="hosDialog.visible"
       :title="hosDialog.title"
       width="50%"
@@ -231,10 +275,10 @@
     >
       <el-form :model="hosForm">
         <el-form-item label="动物名" label-width="120px">
-          <el-input v-model="hosForm.hosName" autocomplete="off" />
+          <el-input v-model="hosForm.hosAnimalName" autocomplete="off" />
         </el-form-item>
         <el-form-item label="病名" label-width="120px">
-          <el-input v-model="hosForm.hosDesc" autocomplete="off" />
+          <el-input v-model="hosForm.disease" autocomplete="off" />
         </el-form-item>
         <el-form-item label="入院日期" label-width="120px">
           <el-input v-model="hosForm.inDate" autocomplete="off" />
@@ -274,8 +318,25 @@ import {
   updateFee,
   updateHospitalize,
   updateMedicine,
-  updateVaccine
+  updateVaccine,
+  newSection,
+  newMedicine,
+  newFee,
+  newExam,
+  newVaccine,
+  newHospitalize
 } from '@/api/structure'
+
+function dateFormat(time) {
+  const date = new Date(time)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
+  const day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+  const hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours()
+  const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()
+  const seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()
+  return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
+}
 
 export default {
   filters: {
@@ -299,6 +360,13 @@ export default {
       column5: 'column5',
       column6: 'column6',
       tag: '选择结构',
+      addSectionDialog: {
+        visible: false,
+        title: ''
+      },
+      addSectionForm: {
+        secName: ''
+      },
       sectionWordsDialog: {
         visible: false,
         title: '',
@@ -344,7 +412,7 @@ export default {
         feeId: -1,
         feeIndex: -1,
         feeName: '',
-        price: 10,
+        price: 10.00,
         feeDesc: ''
       },
       examDialog: {
@@ -369,6 +437,15 @@ export default {
         vacName: '',
         vacDesc: ''
       },
+      addHosForm: {
+        hosAnimalName: '',
+        disease: '',
+        inDate: ''
+      },
+      addHosDialog: {
+        visible: false,
+        title: ''
+      },
       hosDialog: {
         visible: false,
         title: '',
@@ -377,8 +454,8 @@ export default {
       hosForm: {
         hosId: -1,
         hosIndex: -1,
-        hosName: '',
-        hosDesc: '',
+        hosAnimalName: '',
+        disease: '',
         inDate: '',
         outDate: ''
       }
@@ -390,13 +467,9 @@ export default {
   methods: {
     onCreateNewClicked() {
       if (this.tag === '科室管理') {
-        this.sectionWordsDialog.visible = true
-        this.sectionWordsDialog.title = '创建科室'
-        this.secForm.sectionName = ''
-        this.secForm.recDesc = ''
-        this.secForm.assissDesc = ''
-        this.secForm.docDesc = ''
-        this.sectionWordsDialog.changeMode = 'add'
+        this.addSectionDialog.visible = true
+        this.addSectionDialog.title = '创建科室'
+        this.addSectionForm.secName = ''
       } else if (this.tag === '药品管理') {
         this.medicineDialog.visible = true
         this.medicineDialog.title = '创建药品'
@@ -407,7 +480,7 @@ export default {
         this.feeDialog.visible = true
         this.feeDialog.title = '创建收费项目'
         this.feeForm.feeName = ''
-        this.feeForm.price = ''
+        this.feeForm.price = 0.00
         this.feeForm.feeDesc = ''
         this.feeDialog.changeMode = 'add'
       } else if (this.tag === '化验项目管理') {
@@ -423,13 +496,11 @@ export default {
         this.vacForm.vacDesc = ''
         this.vacDialog.changeMode = 'add'
       } else if (this.tag === '住院管理') {
-        this.hosDialog.visible = true
-        this.hosDialog.title = '创建住院'
-        this.hosForm.hosName = ''
-        this.hosForm.hosDesc = ''
-        this.hosForm.inDate = ''
-        this.hosForm.outDate = ''
-        this.hosDialog.changeMode = 'add'
+        this.addHosDialog.visible = true
+        this.addHosDialog.title = '创建住院'
+        this.addHosForm.hosAnimalName = ''
+        this.addHosForm.disease = ''
+        this.addHosForm.inDate = ''
       }
     },
     onEditClicked(edit_id, edit_index) {
@@ -482,8 +553,8 @@ export default {
         this.hosDialog.title = '编辑住院信息'
         this.hosForm.hosId = edit_id
         this.hosForm.hosIndex = edit_index
-        this.hosForm.hosName = this.list[edit_index].name
-        this.hosForm.hosDesc = this.list[edit_index].description1
+        this.hosForm.hosAnimalName = this.list[edit_index].name
+        this.hosForm.disease = this.list[edit_index].description1
         this.hosForm.inDate = this.list[edit_index].description2
         this.hosForm.outDate = this.list[edit_index].description3
         this.hosDialog.changeMode = 'update'
@@ -573,6 +644,24 @@ export default {
         console.log('image open')
       })
     },
+    addSectionDialogConfirmOnClicked() {
+      const params = {
+        sectionName: this.addSectionForm.secName
+      }
+      newSection(params).then(response => {
+        console.log('created new section' + params.sectionName)
+        console.log(response.data.responseMap.result)
+        this.list.push({
+          id: response.data.responseMap.result,
+          name: params.sectionName,
+          description1: '',
+          description2: '',
+          description3: '',
+          description4: ''
+        })
+      })
+      this.addSectionDialog.visible = false
+    },
     sectionWordsDialogConfirmOnClicked() {
       const params = {
         sectionId: this.secForm.sectionId,
@@ -602,20 +691,11 @@ export default {
               assisDescrip: this.secForm.assissDesc,
               sectionImageUrl: this.secForm.sectionImageUrl
             }
+            console.log(temp)
             updateSection(sectionId, temp).then(response => {
               console.log('updated section' + temp)
             })
           }
-        } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              id: 55,
-              name: this.secForm.sectionName,
-              description1: this.secForm.recDesc,
-              description2: this.secForm.assissDesc,
-              description3: this.secForm.docDesc
-            }
-          )
         }
         this.sectionWordsDialog.visible = false
       })
@@ -646,13 +726,17 @@ export default {
             this.list[medicineIndex].description1 = this.medForm.medDesc
           }
         } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              id: 55,
-              name: this.medForm.medName,
-              description1: this.medForm.medDesc
-            }
-          )
+          const medName = this.medForm.medName
+          const medDescrip = this.medForm.medDesc
+          console.log(medName + medDescrip)
+          newMedicine(medName, medDescrip).then(response => {
+            console.log('created new medicine' + medName + medDescrip)
+            this.list.push({
+              id: response.data.responseMap.result,
+              name: medName,
+              description1: medDescrip
+            })
+          })
         }
         this.medicineDialog.visible = false
       })
@@ -686,14 +770,19 @@ export default {
             })
           }
         } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              id: 55,
-              name: this.feeForm.feeName,
-              description1: this.feeForm.price,
-              description2: this.feeForm.feeDesc
-            }
-          )
+          const feeName = this.feeForm.feeName
+          const feePrice = this.feeForm.price
+          const feeDescrip = this.feeForm.feeDesc
+          console.log(feeName + feePrice + feeDescrip)
+          newFee(feeName, feePrice, feeDescrip).then(response => {
+            console.log('created new fee' + feeName + feePrice + feeDescrip)
+            this.list.push({
+              id: response.data.responseMap.result,
+              name: feeName,
+              description1: feePrice,
+              description2: feeDescrip
+            })
+          })
         }
         this.feeDialog.visible = false
       })
@@ -724,13 +813,16 @@ export default {
             })
           }
         } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              id: 55,
-              name: this.examForm.examName,
-              description1: this.examForm.examDesc
-            }
-          )
+          const examName = this.examForm.examName
+          const examDescrip = this.examForm.examDesc
+          newExam(examName, examDescrip).then(response => {
+            console.log('created new exam' + examName + examDescrip)
+            this.list.push({
+              id: response.data.responseMap.result,
+              name: examName,
+              description1: examDescrip
+            })
+          })
         }
         this.examDialog.visible = false
       })
@@ -761,23 +853,42 @@ export default {
             })
           }
         } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              id: 55,
-              name: this.vacForm.vacName,
-              description1: this.vacForm.vacDesc
-            }
-          )
+          const vacName = this.vacForm.vacName
+          const vacDescrip = this.vacForm.vacDesc
+          newVaccine(vacName, vacDescrip).then(response => {
+            console.log('created new vaccine' + vacName + vacDescrip)
+            this.list.push({
+              id: response.data.responseMap.result,
+              name: vacName,
+              description1: vacDescrip
+            })
+          })
         }
         this.vacDialog.visible = false
       })
+    },
+    addHosDialogConfirmOnClicked() {
+      const hosAnimalName = this.addHosForm.hosAnimalName
+      const disease = this.addHosForm.disease
+      const inDate = dateFormat(this.addHosForm.inDate)
+      newHospitalize(hosAnimalName, disease, inDate).then(response => {
+        console.log('created new hospitalize' + hosAnimalName + disease + inDate)
+        this.list.push({
+          id: response.data.responseMap.result,
+          name: hosAnimalName,
+          description1: disease,
+          description2: inDate,
+          description3: ''
+        })
+      })
+      this.addHosDialog.visible = false
     },
     hosDialogConfirmOnClicked() {
       const params = {
         hosId: this.hosForm.hosId,
         hosIndex: this.hosForm.hosIndex,
-        hosName: this.hosForm.hosName,
-        hosDesc: this.hosForm.hosDesc,
+        hosAnimalName: this.hosForm.hosAnimalName,
+        disease: this.hosForm.disease,
         inDate: this.hosForm.inDate,
         outDate: this.hosForm.outDate,
         changeMode: this.hosDialog.changeMode
@@ -788,31 +899,22 @@ export default {
         const hosId = this.hosForm.hosId
         const temp = {
           hosId: this.hosForm.hosId,
-          hosAnimalName: this.hosForm.hosName,
-          disease: this.hosForm.hosDesc,
-          inDate: this.hosForm.inDate,
-          outDate: this.hosForm.outDate
+          hosAnimalName: this.hosForm.hosAnimalName,
+          disease: this.hosForm.disease,
+          inDate: dateFormat(this.hosForm.inDate),
+          outDate: dateFormat(this.hosForm.outDate)
         }
+        console.log(temp)
         if (changeMode === 'update') {
           if (hosIndex != null && hosIndex >= 0) {
-            this.list[hosIndex].name = this.hosForm.hosName
-            this.list[hosIndex].description1 = this.hosForm.hosDesc
-            this.list[hosIndex].description2 = this.hosForm.inDate
-            this.list[hosIndex].description3 = this.hosForm.outDate
+            this.list[hosIndex].name = this.hosForm.hosAnimalName
+            this.list[hosIndex].description1 = this.hosForm.disease
+            this.list[hosIndex].description2 = dateFormat(this.hosForm.inDate)
+            this.list[hosIndex].description3 = dateFormat(this.hosForm.outDate)
             updateHospitalize(hosId, temp).then(response => {
               console.log(temp)
             })
           }
-        } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              id: 55,
-              name: this.hosForm.hosName,
-              description1: this.hosForm.hosDesc,
-              description2: this.hosForm.inDate,
-              description3: this.hosForm.outDate
-            }
-          )
         }
         this.hosDialog.visible = false
       })
@@ -844,13 +946,14 @@ export default {
             tempList.push({
               id: resultList[i].sectionId,
               name: resultList[i].sectionName,
-              description1: resultList[i].recDescrip,
-              description2: resultList[i].assisDescrip,
-              description3: resultList[i].docDescrip,
-              description4: resultList[i].sectionImageUrl
+              description1: resultList[i].recDescrip != null ? resultList[i].recDescrip : '',
+              description2: resultList[i].assisDescrip != null ? resultList[i].assisDescrip : '',
+              description3: resultList[i].docDescrip != null ? resultList[i].docDescrip : '',
+              description4: resultList[i].sectionImageUrl != null ? resultList[i].sectionImageUrl : ''
             })
           }
           this.list = tempList
+          console.log(this.list)
         })
       } else if (command === 'medicine') {
         this.tag = '药品管理'
@@ -942,8 +1045,8 @@ export default {
               id: resultList[i].hosId,
               name: resultList[i].hosAnimalName,
               description1: resultList[i].disease,
-              description2: resultList[i].inDate,
-              description3: resultList[i].outDate
+              description2: dateFormat(resultList[i].inDate),
+              description3: dateFormat(resultList[i].outDate)
             })
           }
           this.list = tempList
