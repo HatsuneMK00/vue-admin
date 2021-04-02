@@ -45,8 +45,8 @@
       <el-table-column align="center" prop="created_at" label="操作" width="200">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.$index, scope.$index)"/>
-            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.$index, scope.$index)"/>
+            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.row.caseId, scope.$index)"/>
+            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.row.caseId, scope.$index)"/>
           </el-button-group>
         </template>
       </el-table-column>
@@ -56,6 +56,7 @@
       :title="wordsDialog.title"
       width="50%"
       center
+      destroy-on-close
       @close="wordsDialog.visible = false"
     >
       <el-form :model="form">
@@ -84,9 +85,10 @@
       :title="mediaDialog.title"
       width="50%"
       center
+      destroy-on-close
       @close="mediaDialog.visible = false"
     >
-      <div class="case-image" :visible="mediaDialog.contentVisible">
+      <div v-if="mediaDialog.imageVisible" class="case-image" style="width: 90%; height: 90%; margin: 0 auto">
         <el-image v-for="url in imageUrls" :key="url" :src="url" lazy>
           <template #error>
             <div class="image-slot">
@@ -95,13 +97,22 @@
           </template>
         </el-image>
       </div>
+      <div v-if="mediaDialog.videoVisible" class="case-video" style="width: 90%; height: 90%; margin: 0 auto">
+        <video
+          v-if="videoUrl !== ''"
+          style="width: 100%; height: 100%"
+          :src="videoUrl"
+          controls="controls"
+        />
+      </div>
       <el-upload
         class="media-upload"
         :action="postUrl"
+        :name="uploadParamName"
         :on-preview="handlePreview"
         :on-remove="handleRemove"
         multiple
-        :limit="3"
+        :limit="1"
         :on-exceed="handleExceed"
         :file-list="fileList"
       >
@@ -121,8 +132,7 @@
 </template>
 
 <script>
-import {getList} from '@/api/table'
-import { fetchCaseList, deleteCaseById, getImageById, getVideoById, submitWordsDialogResult } from '@/api/case'
+import { fetchCaseList, deleteCaseById, getInfoByIdAndType, updateCaseWordsInfo, addNewCase, addNewCaseInfo } from '@/api/case'
 
 export default {
   data() {
@@ -136,7 +146,8 @@ export default {
       },
       mediaDialog: {
         visible: false,
-        contentVisible: true,
+        imageVisible: false,
+        videoVisible: false,
         title: ''
       },
       form: {
@@ -147,17 +158,11 @@ export default {
         zhenDuan: '',
         zhiLiao: ''
       },
-      imageUrls: [
-        'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg',
-        'https://fuss10.elemecdn.com/1/34/19aa98b1fcb2781c4fba33d850549jpeg.jpeg',
-        'https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg',
-        'https://fuss10.elemecdn.com/9/bb/e27858e973f5d7d3904835f46abbdjpeg.jpeg',
-        'https://fuss10.elemecdn.com/d/e6/c4d93a3805b3ce3f323f7974e6f78jpeg.jpeg',
-        'https://fuss10.elemecdn.com/3/28/bbf893f792f03a54408b3b7a7ebf0jpeg.jpeg',
-        'https://fuss10.elemecdn.com/2/11/6535bcfb26e4c79b48ddde44f4b6fjpeg.jpeg'
-      ],
+      imageUrls: [],
+      videoUrl: '',
       postUrl: '',
       uploadTip: '',
+      uploadParamName: 'image',
       fileList: []
     }
   },
@@ -169,49 +174,38 @@ export default {
       this.listLoading = true
       fetchCaseList().then(response => {
         console.log(response.data.responseMap)
-        const data = [{
-          caseId: 1,
-          type: 'words',
-          caseName: '病例名1',
-          jieZhen: '接诊文字A',
-          zhenDuan: '诊断方案文字A',
-          zhiLiao: '治疗方案文字A'
-        }, {
-          caseId: 1,
-          type: 'image',
-          caseName: '病例名1',
-          jieZhen: '接诊图片B',
-          zhenDuan: '诊断方案图片B',
-          zhiLiao: '治疗方案图片B'
-        }, {
-          caseId: 1,
-          type: 'video',
-          caseName: '病例名1',
-          jieZhen: '接诊视频C',
-          zhenDuan: '诊断方案视频C',
-          zhiLiao: '治疗方案视频C'
-        }, {
-          caseId: 2,
-          type: 'words',
-          caseName: '病例名2',
-          jieZhen: '接诊文字A',
-          zhenDuan: '诊断方案文字A',
-          zhiLiao: '治疗方案文字A'
-        }, {
-          caseId: 2,
-          type: 'image',
-          caseName: '病例名',
-          jieZhen: '接诊图片B',
-          zhenDuan: '诊断方案图片B',
-          zhiLiao: '治疗方案图片B'
-        }, {
-          caseId: 2,
-          caseName: '病例名2',
-          type: 'video',
-          jieZhen: '接诊视频C',
-          zhenDuan: '诊断方案视频C',
-          zhiLiao: '治疗方案视频C'
-        }]
+        const result = response.data.responseMap.result
+        const description = response.data.responseMap.descrip
+        const itemCount = response.data.responseMap.count
+        console.log('item count: ' + itemCount)
+        var data = []
+        for (let i = 0; i < result.length; i++) {
+          const item = result[i]
+          data.push({
+            caseId: item.caseId,
+            type: 'words',
+            caseName: item.caseName,
+            jieZhen: description[i][0],
+            zhenDuan: description[i][1],
+            zhiLiao: description[i][2]
+          })
+          data.push({
+            caseId: item.caseId,
+            type: 'image',
+            caseName: item.caseName,
+            jieZhen: 'jieZhen',
+            zhenDuan: 'zhenDuan',
+            zhiLiao: 'zhiLiao'
+          })
+          data.push({
+            caseId: item.caseId,
+            type: 'video',
+            caseName: item.caseName,
+            jieZhen: 'jieZhen',
+            zhenDuan: 'zhenDuan',
+            zhiLiao: 'zhiLiao'
+          })
+        }
         this.list = data
         this.listLoading = false
       })
@@ -231,16 +225,23 @@ export default {
         }
       }
     },
-    onDeleteClicked(case_id, case_index) {
-      deleteCaseById(case_id).then(response => {
-        // if (response.data.result === 200) {
-        // eslint-disable-next-line no-constant-condition
-        if (true) {
-          console.log('delete case success')
-          this.list.splice(case_index, 3)
-        } else {
-          // console.log('删除失败')
-        }
+    onDeleteClicked(caseId, caseIndex) {
+      this.$confirm('是否删除？', '删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteCaseById(caseId).then(response => {
+          console.log(response.data)
+          if (response.data.status === 200) {
+            this.$message('删除成功')
+            this.list.splice(caseIndex, 3)
+          } else {
+            this.$message('删除失败 请重试')
+          }
+        })
+      }).catch(() => {
+        this.$message('取消删除')
       })
     },
     onCreateNewClicked() {
@@ -264,6 +265,7 @@ export default {
       this.wordsDialog.changeMode = 'update'
     },
     wordsDialogConfirmOnClicked() {
+      const this_ = this
       const params = {
         caseId: this.form.caseId,
         caseIndex: this.form.caseIndex,
@@ -273,65 +275,135 @@ export default {
         zhiLiao: this.form.zhiLiao,
         changeMode: this.wordsDialog.changeMode
       }
-      submitWordsDialogResult(params).then(response => {
-        const caseIndex = this.form.caseIndex
-        const changeMode = this.wordsDialog.changeMode
-        if (changeMode === 'update') {
-          if (caseIndex != null && caseIndex >= 0) {
-            this.list[caseIndex].caseName = this.form.caseName
-            this.list[caseIndex].jieZhen = this.form.jieZhen
-            this.list[caseIndex].zhenDuan = this.form.zhenDuan
-            this.list[caseIndex].zhiLiao = this.form.zhiLiao
+      if (params.changeMode === 'add') {
+        addNewCase(params).then(response => {
+          console.log(response)
+          if (response.data.status === 200) {
+            params.caseId = response.data.responseMap.result
+            addNewCaseInfo(params).then(this_.$axios.spread(function(responseJieZhen, responseZhenDuan, responseZhiLiao) {
+              if (responseJieZhen.data.status === 200 &&
+                responseZhenDuan.data.status === 200 &&
+                responseZhiLiao.data.status === 200) {
+                this_.$message('添加成功')
+                console.log('add success')
+                this_.list.push(
+                  {
+                    caseId: response.data.responseMap.caseId,
+                    type: 'words',
+                    caseName: this_.form.caseName,
+                    jieZhen: this_.form.jieZhen,
+                    zhenDuan: this_.form.zhenDuan,
+                    zhiLiao: this_.form.zhiLiao
+                  }, {
+                    caseId: response.data.responseMap.caseId,
+                    type: 'image',
+                    caseName: this_.form.caseName,
+                    jieZhen: '',
+                    zhenDuan: '',
+                    zhiLiao: ''
+                  }, {
+                    caseId: response.data.responseMap.caseId,
+                    type: 'video',
+                    caseName: this_.form.caseName,
+                    jieZhen: '',
+                    zhenDuan: '',
+                    zhiLiao: ''
+                  }
+                )
+              } else {
+                this_.$message('病例文字信息添加失败 请重试')
+              }
+            }))
+          } else {
+            this_.$message('病例添加失败 请重试')
           }
-        } else if (changeMode === 'add') {
-          this.list.push(
-            {
-              caseId: 12,
-              type: 'words',
-              caseName: this.form.caseName,
-              jieZhen: this.form.jieZhen,
-              zhenDuan: this.form.zhenDuan,
-              zhiLiao: this.form.zhiLiao
-            }, {
-              caseId: 1,
-              type: 'image',
-              caseName: this.form.caseName,
-              jieZhen: '',
-              zhenDuan: '',
-              zhiLiao: ''
-            }, {
-              caseId: 1,
-              type: 'video',
-              caseName: this.form.caseName,
-              jieZhen: '',
-              zhenDuan: '',
-              zhiLiao: ''
+          this_.wordsDialog.visible = false
+        })
+      } else if (params.changeMode === 'update') {
+        updateCaseWordsInfo(params).then(this_.$axios.spread(function(responseName, responseDesc) {
+          const caseIndex = params.caseIndex
+          if (responseName.data.status === 200 && responseDesc.data.status === 200) {
+            this_.$message('更新成功')
+            console.log('update success')
+            if (caseIndex != null && caseIndex >= 0) {
+              this.list[caseIndex].caseName = this_.form.caseName
+              this.list[caseIndex].jieZhen = this_.form.jieZhen
+              this.list[caseIndex].zhenDuan = this_.form.zhenDuan
+              this.list[caseIndex].zhiLiao = this_.form.zhiLiao
             }
-          )
-        }
-        this.wordsDialog.visible = false
-      })
+          } else {
+            if (responseName.data.status !== 200) {
+              console.log('name update fail')
+              console.log(responseName)
+              this_.$message('病例名更新失败 请重试')
+            } else if (responseDesc.data.status !== 200) {
+              console.log('desc update fail')
+              console.log(responseDesc)
+              this_.$message('病例信息更新失败 请重试')
+            }
+          }
+          this_.wordsDialog.visible = false
+        }))
+      }
     },
-    onImageClicked(case_id, image_urls) {
+    onImageClicked(caseId, type) {
       this.mediaDialog.visible = true
-      this.mediaDialog.contentVisible = true
+      this.mediaDialog.imageVisible = true
+      this.mediaDialog.videoVisible = false
       this.mediaDialog.title = '病例图片'
       this.uploadTip = '上传图片please，太大了不收'
-      console.log('case_id: ' + case_id)
-      console.log('image_urls: ' + image_urls)
-      getImageById(case_id).then(response => {
-        console.log('image open')
+      this.uploadParamName = 'image'
+      const base_url = 'http://47.101.217.16:8080'
+      if (type === 'jieZhen') {
+        this.postUrl = base_url + '/admin/case/' + caseId + '/consult/image'
+      } else if (type === 'zhenDuan') {
+        this.postUrl = base_url + '/admin/case/' + caseId + '/diag/image'
+      } else if (type === 'zhiLiao') {
+        this.postUrl = base_url + '/admin/case/' + caseId + '/therapy/image'
+      }
+      getInfoByIdAndType(caseId, type).then(response => {
+        console.log(response)
+        var imageUrl = ''
+        if (type === 'jieZhen') {
+          imageUrl = 'http://' + response.data.responseMap.result.consultImageUrl
+        } else if (type === 'zhenDuan') {
+          imageUrl = 'http://' + response.data.responseMap.result.diagImageUrl
+        } else if (type === 'zhiLiao') {
+          imageUrl = 'http://' + response.data.responseMap.result.therapyImageUrl
+        }
+        console.log(imageUrl)
+        this.imageUrls = [imageUrl]
       })
     },
-    onVideoClicked(case_id, video_url) {
-      this.mediaDialog.contentVisible = false
-      this.mediaDialog.title = '病例视频'
+    onVideoClicked(caseId, type) {
       this.mediaDialog.visible = true
+      this.mediaDialog.imageVisible = false
+      this.mediaDialog.videoVisible = true
+      this.mediaDialog.title = '病例视频'
       this.uploadTip = '上传视频please，太大了不收'
-      console.log('case_id: ' + case_id)
-      console.log('image_urls: ' + video_url)
-      getVideoById(case_id).then(response => {
-        console.log('video open')
+      this.uploadParamName = 'video'
+      const base_url = 'http://47.101.217.16:8080'
+      if (type === 'jieZhen') {
+        this.postUrl = base_url + '/admin/case/' + caseId + '/consult/video'
+      } else if (type === 'zhenDuan') {
+        this.postUrl = base_url + '/admin/case/' + caseId + '/diag/video'
+      } else if (type === 'zhiLiao') {
+        this.postUrl = base_url + '/admin/case/' + caseId + '/therapy/video'
+      }
+      getInfoByIdAndType(caseId, type).then(response => {
+        console.log(response)
+        this.videoUrl = 'https://v-cdn.zjol.com.cn/280443.mp4'
+        var videoUrl = ''
+        if (type === 'jieZhen') {
+          videoUrl = 'http://' + response.data.responseMap.result.consultVideoUrl
+        } else if (type === 'zhenDuan') {
+          videoUrl = 'http://' + response.data.responseMap.result.diagVideoUrl
+        } else if (type === 'zhiLiao') {
+          videoUrl = 'http://' + response.data.responseMap.result.therapyVideoUrl
+        }
+        console.log(videoUrl)
+        // todo 有数据之后注释去掉
+        // this.videoUrl = videoUrl
       })
     },
     handleRemove(file, fileList) {
