@@ -167,6 +167,10 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/test_user/inTest',
+    component: () => import('@/views/user-test/user-takeTest/inTest')
+  },
 
   {
     path: '/form',
