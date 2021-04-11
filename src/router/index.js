@@ -147,6 +147,26 @@ export const constantRoutes = [
   },
 
   {
+    path: '/test_user',
+    component: Layout,
+    name: 'TestUser',
+    children: [
+      {
+        path: 'take_test',
+        name: 'TakeTest',
+        component: () => import('@/views/user-test/user-takeTest/index'),
+        meta: { title: '考试' }
+      },
+      {
+        path: 'check_result',
+        name: 'CheckResult',
+        component: () => import('@/views/user-test/user-takeTest/index'),
+        meta: { title: '查看结果' }
+      }
+    ]
+  },
+
+  {
     path: '/form',
     component: Layout,
     children: [
