@@ -54,28 +54,6 @@ export const constantRoutes = [
       meta: { title: 'Dashboard', icon: 'dashboard' }
     }]
   },
-
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
-      },
-      {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
-      }
-    ]
-  },
   // 404 page must be placed at the end !!!
   {
     path: '*',
@@ -171,6 +149,26 @@ export const asyncRoutes = [
   }
 ]
 
+export const userRoutes = [
+  {
+    path: '/user_test',
+    component: Layout,
+    name: 'UserTest',
+    meta: {
+      roles: ['admin']
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'UserTestIndex',
+        component: () => import('@/views/manage-user/index'),
+        meta: {
+          title: '用户才能看到的世界',
+          icon: 'user' ,
+        }
+      }
+    ]
+  }]
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
