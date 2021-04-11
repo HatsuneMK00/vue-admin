@@ -173,7 +173,7 @@ export default {
       this.wordsDialog.changeMode = 'add'
     },
     onDeleteClicked(question_id, question_index) {
-      deleteQuestionById({quesId: question_id}  ).then(response => {
+      deleteQuestionById({ quesId: question_id }).then(response => {
         if (response.data.status === 200) {
           console.log('delete question success')
           this.list.splice(question_index, 1)
@@ -212,7 +212,6 @@ export default {
         console.log("2")
         const index = this.form.index
         const changeMode = this.wordsDialog.changeMode
-        const id = response.data.quesId
         const temp = {
           descrip: this.form.questionDescription,
           answer: this.form.questionAnswer,
@@ -231,23 +230,24 @@ export default {
             this.list[index].tag = this.form.questionTag
             this.list[index].image = this.form.questionImage
             changeQuestionById(id, temp).then(response => {
-              console.log('Updated user' + temp)
+              console.log('Updated question' + temp)
             })
           }
         } else if (changeMode === 'add') {
           console.log("3")
           addQuestion(temp).then(response => {
             console.log('Create new question' + temp)
+            this.list.push({
+              quesId: response.data.responseMap.result,
+              descrip: this.form.questionDescription,
+              answer: this.form.questionAnswer,
+              type: this.form.questionType,
+              score: this.form.questionScore,
+              tag: this.form.questionTag,
+              image: this.form.questionImage
+            })
           })
-          this.list.push({
-            quesId: id,
-            descrip: this.form.questionDescription,
-            answer: this.form.questionAnswer,
-            type: this.form.questionType,
-            score: this.form.questionScore,
-            tag: this.form.questionTag,
-            image: this.form.questionImage
-          })
+
         }
         this.wordsDialog.visible = false
       })
