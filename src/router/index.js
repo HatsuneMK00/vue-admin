@@ -122,6 +122,7 @@ export const constantRoutes = [
     path: '/case_manage',
     component: Layout,
     name: 'CaseManage',
+    meta: { title: '测试管理', icon: 'form' },
     children: [
       {
         path: 'index',
@@ -142,6 +143,26 @@ export const constantRoutes = [
         name: 'StructureManage',
         component: () => import('@/views/manage-structure/index'),
         meta: { title: '结构管理', icon: 'table' }
+      }
+    ]
+  },
+
+  {
+    path: '/test_user',
+    component: Layout,
+    name: 'TestUser',
+    children: [
+      {
+        path: 'take_test',
+        name: 'TakeTest',
+        component: () => import('@/views/user-test/user-takeTest/index'),
+        meta: { title: '考试' }
+      },
+      {
+        path: 'check_result',
+        name: 'CheckResult',
+        component: () => import('@/views/user-test/user-takeTest/index'),
+        meta: { title: '查看结果' }
       }
     ]
   },
