@@ -155,7 +155,7 @@ export const constantRoutes = [
       {
         path: 'take_test',
         name: 'TakeTest',
-        component: () => import('@/views/user-test/user-takeTest/index'),
+        component: () => import('@/views/user-test/user-takeTest/inTest'),
         meta: { title: '考试' }
       },
       {
