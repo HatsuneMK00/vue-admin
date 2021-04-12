@@ -173,6 +173,33 @@ export const userRoutes = [
   {
     path: '/test_user/inTest',
     component: () => import('@/views/user-test/user-takeTest/inTest')
+  },
+  {
+    path: '/case_front',
+    component: Layout,
+    name: 'CaseFront',
+    children: [
+      {
+        path: 'index',
+        name: 'CaseFrontInner',
+        component: () => import('@/views/front-case/index'),
+        meta: { title: '病例学习', icon: 'table' }
+      }
+    ]
+  },
+  {
+    path: '/case_front/detail/',
+    name: 'CaseDetail',
+    component: Layout,
+    children: [
+      {
+        path: 'caseId/:caseId',
+        name: 'CaseDetailInner',
+        component: () => import('@/views/front-case/detail'),
+        meta: { title: '病例详情' },
+        breadcrumb: true
+      }
+    ]
   }
 ]
 const createRouter = () => new Router({
