@@ -7,15 +7,15 @@
       </div>
 
 
-      <el-form-item prop="username">
+      <el-form-item prop="userName">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
+          ref="userName"
+          v-model="loginForm.userName"
+          placeholder="userName"
+          name="userName"
           type="text"
           tabindex="1"
           auto-complete="on"
@@ -44,15 +44,15 @@
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
-      <div style="margin-top: 0px; margin-bottom: 20px">
-        <el-radio v-model="userType" label="user" border size="medium" class="chooseUser">普通用户</el-radio>
-        <el-radio v-model="userType" label="admin" border size="medium" class="chooseUser">管理员</el-radio>
-      </div>
+<!--      <div style="margin-top: 0px; margin-bottom: 20px">-->
+<!--        <el-radio v-model="userType" label="user" border size="medium" class="chooseUser">普通用户</el-radio>-->
+<!--        <el-radio v-model="userType" label="admin" border size="medium" class="chooseUser">管理员</el-radio>-->
+<!--      </div>-->
 
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div>
+<!--      <div class="tips">-->
+<!--        <span style="margin-right:20px;">userName: admin</span>-->
+<!--        <span> password: any</span>-->
+<!--      </div>-->
 
     </el-form>
   </div>
@@ -80,11 +80,11 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
+        userName: 'admin',
         password: '111111'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        userName: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
@@ -117,7 +117,7 @@ export default {
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
+            this.$router.push({ path: '/' })
             this.loading = false
           }).catch(() => {
             this.loading = false

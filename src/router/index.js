@@ -54,48 +54,45 @@ export const constantRoutes = [
       meta: { title: 'Dashboard', icon: 'dashboard' }
     }]
   },
-
+  // 404 page must be placed at the end !!!
   {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
-      },
-      {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
-      }
-    ]
-  },
+    path: '*',
+    redirect: '/404',
+    hidden: true
+  }
+]
 
+// 异步挂载的路由
+// 动态需要根据权限加载的路由表
+export const asyncRoutes = [
   {
     path: '/user_manage',
     component: Layout,
     name: 'UserManage',
+    meta: {
+      roles: ['admin']
+    },
     children: [
       {
         path: 'index',
         name: 'UserManage',
         component: () => import('@/views/manage-user/index'),
-        meta: { title: '用户管理', icon: 'table' }
+        meta: {
+          title: '用户管理',
+          icon: 'user'
+        }
       }
     ]
   },
-
   {
     path: '/test_manage',
     component: Layout,
     name: 'TestManage',
-    meta: { title: '测试管理', icon: 'form' },
+    meta: {
+      title: '测试管理',
+      icon: 'form',
+      roles: ['admin']
+    },
     children: [
       {
         path: 'question_manage',
@@ -117,11 +114,13 @@ export const constantRoutes = [
       }
     ]
   },
-
   {
     path: '/case_manage',
     component: Layout,
     name: 'CaseManage',
+    meta: {
+      roles: ['admin']
+    },
     children: [
       {
         path: 'index',
@@ -136,6 +135,9 @@ export const constantRoutes = [
     path: '/structure_manage',
     component: Layout,
     name: 'StructureManage',
+    meta: {
+      roles: ['admin']
+    },
     children: [
       {
         path: 'index',
@@ -144,6 +146,33 @@ export const constantRoutes = [
         meta: { title: '结构管理', icon: 'table' }
       }
     ]
+  }
+]
+
+export const userRoutes = [
+  {
+    path: '/test_user',
+    component: Layout,
+    name: 'TestUser',
+    meta: { title: '考试', icon: 'form' },
+    children: [
+      {
+        path: 'take_test',
+        name: 'TakeTest',
+        component: () => import('@/views/user-test/user-takeTest/index'),
+        meta: { title: '参加考试' }
+      },
+      {
+        path: 'check_result',
+        name: 'CheckResult',
+        component: () => import('@/views/user-test/user-checkResult/index'),
+        meta: { title: '查看结果' }
+      }
+    ]
+  },
+  {
+    path: '/test_user/inTest',
+    component: () => import('@/views/user-test/user-takeTest/inTest')
   },
   {
     path: '/case_front',
@@ -171,23 +200,8 @@ export const constantRoutes = [
         breadcrumb: true
       }
     ]
-  },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
-      }
-    ]
-  },
-
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  }
 ]
-
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),

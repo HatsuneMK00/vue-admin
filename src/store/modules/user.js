@@ -1,12 +1,14 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
+import da from "element-ui/src/locale/lang/da";
 
 const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    role: ''
   }
 }
 
@@ -24,18 +26,23 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLE: (state, role) => {
+    state.roles = role
   }
 }
 
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const {userName, password} = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      login({userName : userName.trim() , password:password}).then(response => {
         const { data } = response
+        data.token = data.responseMap.result// 临时先设置token为id
         commit('SET_TOKEN', data.token)
         setToken(data.token)
+        console.log(data)
         resolve()
       }).catch(error => {
         reject(error)
@@ -46,17 +53,17 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo({userId:state.token}).then(response => {
         const { data } = response
-
         if (!data) {
           return reject('Verification failed, please Login again.')
         }
-
-        const { name, avatar } = data
-
+        const { name, avatar , role } = data.responseMap.result
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
+        commit('SET_ROLE', role)
+        console.log("GetInfo:")
+        console.log(data)
         resolve(data)
       }).catch(error => {
         reject(error)
