@@ -191,6 +191,7 @@ export const userRoutes = [
     path: '/case_front/detail/',
     name: 'CaseDetail',
     component: Layout,
+    hidden: true,
     children: [
       {
         path: 'caseId/:caseId',
