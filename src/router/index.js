@@ -151,20 +151,25 @@ export const constantRoutes = [
     path: '/test_user',
     component: Layout,
     name: 'TestUser',
+    meta: { title: '考试管理', icon: 'form' },
     children: [
       {
         path: 'take_test',
         name: 'TakeTest',
-        component: () => import('@/views/user-test/user-takeTest/inTest'),
-        meta: { title: '考试' }
+        component: () => import('@/views/user-test/user-takeTest/index'),
+        meta: { title: '参加考试' }
       },
       {
         path: 'check_result',
         name: 'CheckResult',
-        component: () => import('@/views/user-test/user-takeTest/index'),
+        component: () => import('@/views/user-test/user-checkResult/index'),
         meta: { title: '查看结果' }
       }
     ]
+  },
+  {
+    path: '/test_user/inTest',
+    component: () => import('@/views/user-test/user-takeTest/inTest')
   },
 
   {
