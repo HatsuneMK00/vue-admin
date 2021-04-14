@@ -167,27 +167,21 @@ export const asyncRoutes = [
     path: '/case_front',
     component: Layout,
     name: 'CaseFront',
+    redirect: "/case_front",
+    meta: { title: '病例列表', icon: 'form' },
     children: [
       {
         path: 'index',
         name: 'CaseFrontInner',
         component: () => import('@/views/front-case/index'),
-        meta: { title: '病例学习', icon: 'table' }
-      }
-    ]
-  },
-  {
-    path: '/case_front/detail/',
-    name: 'CaseDetail',
-    component: Layout,
-    hidden: true,
-    children: [
+        meta: { title: '病例学习' ,icon: 'form'},
+      },
       {
-        path: 'caseId/:caseId',
+        path: '/case_front/detail/caseId/:caseId',
         name: 'CaseDetailInner',
         component: () => import('@/views/front-case/detail'),
         meta: { title: '病例详情' },
-        breadcrumb: true
+        hidden: true
       }
     ]
   },
@@ -195,6 +189,7 @@ export const asyncRoutes = [
     path: '/hospital_navigation',
     component: Layout,
     name: 'HospitalNavigation',
+    redirect: '/hospital_navigation/index',
     children: [
       {
         path: 'index',
