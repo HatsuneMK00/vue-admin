@@ -42,7 +42,6 @@ export const constantRoutes = [
     component: () => import('@/views/404'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -51,14 +50,8 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: 'Dashboard', icon: 'dashboard' }
+      meta: { title: '主页', icon: 'dashboard' }
     }]
-  },
-  // 404 page must be placed at the end !!!
-  {
-    path: '*',
-    redirect: '/404',
-    hidden: true
   }
 ]
 
@@ -75,7 +68,7 @@ export const asyncRoutes = [
     children: [
       {
         path: 'index',
-        name: 'UserManage',
+        name: 'UserManageIndex',
         component: () => import('@/views/manage-user/index'),
         meta: {
           title: '用户管理',
@@ -124,13 +117,12 @@ export const asyncRoutes = [
     children: [
       {
         path: 'index',
-        name: 'CaseManage',
+        name: 'CaseManageIndex',
         component: () => import('@/views/manage-case/index'),
         meta: { title: '病例管理', icon: 'table' }
       }
     ]
   },
-
   {
     path: '/structure_manage',
     component: Layout,
@@ -141,20 +133,17 @@ export const asyncRoutes = [
     children: [
       {
         path: 'index',
-        name: 'StructureManage',
+        name: 'StructureManageIndex',
         component: () => import('@/views/manage-structure/index'),
         meta: { title: '结构管理', icon: 'table' }
       }
     ]
-  }
-]
-
-export const userRoutes = [
+  },
   {
     path: '/test_user',
     component: Layout,
     name: 'TestUser',
-    meta: { title: '考试', icon: 'form' },
+    meta: { title: '进行考试', icon: 'form' ,roles: ['admin','user']},
     children: [
       {
         path: 'take_test',
@@ -191,6 +180,7 @@ export const userRoutes = [
     path: '/case_front/detail/',
     name: 'CaseDetail',
     component: Layout,
+    hidden: true,
     children: [
       {
         path: 'caseId/:caseId',
@@ -200,8 +190,31 @@ export const userRoutes = [
         breadcrumb: true
       }
     ]
+  },
+  {
+    path: '/hospital_navigation',
+    component: Layout,
+    name: 'HospitalNavigation',
+    children: [
+      {
+        path: 'index',
+        name: 'HospitalNavigationIndex',
+        component: () => import('@/views/hospital_navigation/index'),
+        meta: { title: '3D医院导览', icon: 'table' }
+      }
+    ]
+  },
+  //404一定要放在最后!
+  {
+    path: '*',
+    redirect: '/404',
+    hidden: true
   }
 ]
+
+
+
+
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
