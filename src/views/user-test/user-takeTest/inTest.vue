@@ -45,7 +45,25 @@
       </div>
       <template #footer>
         <span class="dialog-footer">
+          <el-button @click="submitAnswerDialog.visible = false">取消</el-button>
           <el-button type="primary" @click="submitAnswerDialogConfirmOnClicked">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <el-dialog
+      :visible="showScoreDialog.visible"
+      :title="showScoreDialog.title"
+      width="50%"
+      center
+      @close="showScoreDialog.visible = false"
+    >
+      <div style="margin: 0 auto; text-align: center">
+        <span>提交成功！您获得的分数为：<br> </span>
+        <span>{{ resultScore }}</span>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="showScoreDialogConfirmOnClicked">返 回 首 页</el-button>
         </span>
       </template>
     </el-dialog>
@@ -67,25 +85,44 @@ export default {
       submitAnswerDialog: {
         visible: false,
         title: ''
-      }
+      },
+      testId: -1,
+      showScoreDialog: {
+        visible: false,
+        title: ''
+      },
+      resultScore: 0
     }
   },
   created() {
-    const testId = this.$route.query.id
-    console.log(testId)
-    getQuestionList().then(response => {
-      const resultList = response.data.responseMap.result
-      console.log(resultList)
-      const questionList = []
-      for (let i = 0; i < resultList.length; i++) {
-        questionList.push({
-          id: resultList[i].quesId != null ? resultList[i].descrip : 0,
-          title: resultList[i].descrip != null ? resultList[i].descrip : '',
-          type: resultList[i].type != null ? resultList[i].type : '',
-          answer: resultList[i].answer != null ? resultList[i].answer : ''
-        })
+    // this.testId = this.$route.query.id
+    console.log(this.testId)
+    getQuestionList(7, 6).then(response => {
+      console.log(response.data.status)
+      if (response.data.status === 400) {
+        this.$message('你已经进行过该考试！请更换考试！')
+      } else if (response.data.status === 200) {
+        let resultList = []
+        resultList = response.data.responseMap.result
+        this.testId = response.data.responseMap.testId
+        console.log(resultList)
+        const questionList = []
+        for (let i = 0; i < resultList.length; i++) {
+          questionList.push({
+            id: resultList[i].quesId != null ? resultList[i].quesId : 0,
+            title: resultList[i].descrip != null ? resultList[i].descrip : '',
+            type: resultList[i].type != null ? resultList[i].type : '',
+            rightAnswer: resultList[i].answer != null ? resultList[i].answer : '',
+            score: resultList[i].score != null ? resultList[i].score : '',
+            tag: resultList[i].tag != null ? resultList[i].tag : '',
+            image: '',
+            answer: ''
+          })
+        }
+        this.tests = questionList
+      } else {
+        this.$message('Something Went Wrong...')
       }
-      this.tests = questionList
     })
   },
   methods: {
@@ -96,21 +133,60 @@ export default {
     submitAnswerDialogConfirmOnClicked() {
       const result = []
       const tempList = this.tests
+      let tempId = -1
+      let tempAnswer = -1
+      let resultAnswer = ''
+      let tempType = ''
       for (let i = 0; i < tempList.length; i++) {
-        result.push({
-          quesId: tempList[i].id,
-          answer: tempList[i].answer
-        })
+        tempId = tempList[i].id
+        result.push(tempId.toString())
+        tempAnswer = tempList[i].answer
+        tempType = tempList[i].type
+        if (tempType === 'select') {
+          if (tempAnswer === 0) {
+            resultAnswer = 'A'
+          } else if (tempAnswer === 1) {
+            resultAnswer = 'B'
+          } else if (tempAnswer === 2) {
+            resultAnswer = 'C'
+          } else if (tempAnswer === 3) {
+            resultAnswer = 'D'
+          } else {
+            resultAnswer = ''
+          }
+        } else if (tempType === 'judge') {
+          if (tempAnswer === 0) {
+            resultAnswer = '1'
+          } else if (tempAnswer === 1) {
+            resultAnswer = '0'
+          } else {
+            resultAnswer = '-1'
+          }
+        } else if (tempType === 'qa') {
+          resultAnswer = tempList[i].answer
+        } else {
+          resultAnswer = ''
+        }
+        result.push(resultAnswer)
       }
-
-      submitAnswer(result).then(response => {
+      console.log(result)
+      submitAnswer(this.testId, result).then(response => {
+        console.log(response)
         if (response.data.status === '200') {
           this.$message({
             type: 'success',
             message: '提交成功！'
           })
-          this.$alert('提交成功')
         }
+        this.resultScore = 6666
+      })
+      this.submitAnswerDialog.visible = false
+      this.showScoreDialog.visible = true
+    },
+    showScoreDialogConfirmOnClicked() {
+      this.$router.push({
+        path: '/test_user/take_test',
+        query: {}
       })
     }
   }
