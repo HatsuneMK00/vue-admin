@@ -149,13 +149,28 @@ export default {
       this.wordsDialog.changeMode = 'add'
     },
     onDeleteClicked(question_id, question_index) {
-      deleteQuestionById({ quesId: question_id }).then(response => {
-        if (response.data.status === 200) {
-          console.log('delete question success')
-          this.list.splice(question_index, 1)
-        } else {
-          alert('删除失败')
-        }
+      this.$confirm('此操作将永久删除此记录，是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteQuestionById({ quesId: question_id }).then(response => {
+          if (response.data.status === 200) {
+            console.log('delete question success')
+            this.list.splice(question_index, 1)
+          } else {
+            alert('删除失败')
+          }
+        })
+        this.$message({
+          type: 'success',
+          message: '删除成功！'
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
     },
     onEditClicked(question_id, question_index) {
