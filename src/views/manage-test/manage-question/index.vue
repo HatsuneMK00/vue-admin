@@ -41,17 +41,6 @@
           {{ scope.row.type }}
         </template>
       </el-table-column>
-      <el-table-column label="题目图片" width="110" align="center">
-        <template slot-scope="scope">
-          <div class="demo-image__preview">
-            <el-image
-              style="width: 100px; height: 100px"
-              :src="scope.row.image"
-              :preview-src-list="scope.row.image">
-            </el-image>
-          </div>
-        </template>
-      </el-table-column>
       <el-table-column align="center" prop="created_at" label="操作" width="200">
         <template slot-scope="scope">
           <el-button-group>
@@ -77,9 +66,9 @@
         </el-form-item>
         <el-form-item label="题型" label-width="120px">
           <el-radio-group v-model="form.questionType" size="small">
-            <el-radio-button label="选择题"></el-radio-button>
-            <el-radio-button label="判断题"></el-radio-button>
-            <el-radio-button label="问答题"></el-radio-button>
+            <el-radio-button label="select" />
+            <el-radio-button label="judge" />
+            <el-radio-button label="qa" />
           </el-radio-group>
         </el-form-item>
         <el-form-item label="分值" label-width="120px">
@@ -87,18 +76,6 @@
         </el-form-item>
         <el-form-item label="题目标签" label-width="120px">
           <el-input v-model="form.questionTag" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="试题图片" label-width="120px">
-          <el-upload
-            v-model="form.questionImage"
-            class="upload-demo"
-            drag
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple>
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
-          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -144,8 +121,7 @@ export default {
         questionAnswer: '',
         questionTag: '',
         questionScore: 0,
-        questionType: '选择题',
-        questionImage: ''
+        questionType: 'select'
       },
       selectValue: ''
     }
@@ -191,7 +167,6 @@ export default {
       this.form.questionTag = this.list[question_index].tag
       this.form.questionType = this.list[question_index].type
       this.form.questionScore = this.list[question_index].score
-      this.form.questionImage = this.list[question_index].image
       this.wordsDialog.visible = true
       this.wordsDialog.changeMode = 'update'
     },
@@ -204,12 +179,11 @@ export default {
         score: this.form.questionScore,
         type: this.form.questionType,
         tag: this.form.questionTag,
-        image: this.form.questionImage,
         changeMode: this.wordsDialog.changeMode
       }
-      console.log("1")
+      console.log('1')
       submitWordsDialogResult(params).then(response => {
-        console.log("2")
+        console.log('2')
         const index = this.form.index
         const changeMode = this.wordsDialog.changeMode
         const temp = {
@@ -217,8 +191,7 @@ export default {
           answer: this.form.questionAnswer,
           score: this.form.questionScore,
           type: this.form.questionType,
-          tag: this.form.questionTag,
-          image: this.form.questionImage
+          tag: this.form.questionTag
         }
         if (changeMode === 'update') {
           if (index != null && index >= 0) {
@@ -228,13 +201,12 @@ export default {
             this.list[index].score = this.form.questionScore
             this.list[index].type = this.form.questionType
             this.list[index].tag = this.form.questionTag
-            this.list[index].image = this.form.questionImage
             changeQuestionById(id, temp).then(response => {
               console.log('Updated question' + temp)
             })
           }
         } else if (changeMode === 'add') {
-          console.log("3")
+          console.log('3')
           addQuestion(temp).then(response => {
             console.log('Create new question' + temp)
             this.list.push({
@@ -243,11 +215,9 @@ export default {
               answer: this.form.questionAnswer,
               type: this.form.questionType,
               score: this.form.questionScore,
-              tag: this.form.questionTag,
-              image: this.form.questionImage
+              tag: this.form.questionTag
             })
           })
-
         }
         this.wordsDialog.visible = false
       })
