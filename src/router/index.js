@@ -100,6 +100,13 @@ export const asyncRoutes = [
         meta: { title: '试卷管理' }
       },
       {
+        path: 'select_questions',
+        name: 'SelectQuestions',
+        component: () => import('@/views/manage-test/manage-paper/selectQuestions'),
+        meta: { title: '配置试卷题目' },
+        hidden: true
+      },
+      {
         path: 'exam_manage',
         name: 'ExamManage',
         component: () => import('@/views/manage-test/manage-exam/index'),
@@ -143,7 +150,7 @@ export const asyncRoutes = [
     path: '/test_user',
     component: Layout,
     name: 'TestUser',
-    meta: { title: '进行考试', icon: 'form' ,roles: ['admin','user']},
+    meta: { title: '进行考试', icon: 'form', roles: ['admin', 'user'] },
     children: [
       {
         path: 'take_test',
@@ -167,27 +174,21 @@ export const asyncRoutes = [
     path: '/case_front',
     component: Layout,
     name: 'CaseFront',
+    redirect: '/case_front',
+    meta: { title: '病例学习', icon: 'form' },
     children: [
       {
         path: 'index',
         name: 'CaseFrontInner',
         component: () => import('@/views/front-case/index'),
-        meta: { title: '病例学习', icon: 'table' }
-      }
-    ]
-  },
-  {
-    path: '/case_front/detail/',
-    name: 'CaseDetail',
-    component: Layout,
-    hidden: true,
-    children: [
+        meta: { title: '病例学习', breadcrumb: false }
+      },
       {
-        path: 'caseId/:caseId',
+        path: 'detail/caseId/:caseId',
         name: 'CaseDetailInner',
         component: () => import('@/views/front-case/detail'),
-        meta: { title: '病例详情' },
-        breadcrumb: true
+        meta: { title: '病例详情', breadcrumb: true },
+        hidden: true
       }
     ]
   },
@@ -195,6 +196,7 @@ export const asyncRoutes = [
     path: '/hospital_navigation',
     component: Layout,
     name: 'HospitalNavigation',
+    redirect: '/hospital_navigation/index',
     children: [
       {
         path: 'index',
@@ -204,16 +206,13 @@ export const asyncRoutes = [
       }
     ]
   },
-  //404一定要放在最后!
+  // 404一定要放在最后!
   {
     path: '*',
     redirect: '/404',
     hidden: true
   }
 ]
-
-
-
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
