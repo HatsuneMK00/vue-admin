@@ -54,17 +54,40 @@
 </template>
 
 <script>
-import { getQuestionList } from '@/api/test/question'
+import {
+  getQuestionList
+} from '@/api/test/question'
+import {
+  getPaperQuestionsById,
+  addQuestionToPaper
+} from '@/api/test/paper'
+
+function sleep(ms) {
+  return new Promise(resolve =>
+    setTimeout(resolve, ms)
+  )
+}
 
 export default {
   data() {
     return {
       list: [],
-      listLoading: false
+      listLoading: false,
+      paperId: -1
     }
   },
   created() {
+    this.paperId = this.$route.query.paperId
     this.fetchData()
+  },
+  mounted() {
+    if (window.history && window.history.pushState) {
+      history.pushState(null, null, document.URL)
+      window.addEventListener('popstate', this.back, false)
+    }
+  },
+  destroyed() {
+    window.removeEventListener('popstate', this.back, false)
   },
   methods: {
     fetchData() {
@@ -84,6 +107,45 @@ export default {
         }
         this.listLoading = false
       })
+      sleep(200).then(() => {
+        getPaperQuestionsById(this.paperId).then(response => {
+          const responseResult = response.data.responseMap.questions
+          for (let i = 0; i < responseResult.length; i++) {
+            for (let j = 0; j < this.list.length; j++) {
+              if (responseResult[i].quesId === this.list[j].quesId) {
+                this.list[j].selected = true
+              }
+            }
+          }
+        })
+      })
+    },
+    back() {
+      this.$confirm('修改尚未保存，直接退出页面将不会作任何修改！是否确认退出？', '注意', {
+        confirmButtonText: '保存并退出',
+        cancelButtonText: '取消',
+        distinguishCancelAndClose: true,
+        center: true
+      }).then(() => {
+        const quesIds = []
+        for (let i = 0; i < this.list.length; i++) {
+          if (this.list[i].selected === true) {
+            quesIds.push(this.list[i].quesId)
+          }
+        }
+        addQuestionToPaper(this.paperId, quesIds).then(response => {
+          this.$message({
+            type: 'success',
+            message: '保存成功!'
+          })
+          this.$router.push('/test_manage/paper_manage')
+        })
+      }).catch(() => {
+        if (window.history && window.history.pushState) {
+          history.pushState(null, null, document.URL)
+          window.addEventListener('popstate', this.back, false)
+        }
+      })
     },
     onSaveClicked() {
       this.$confirm('确认保存试卷配置？', '提示', {
@@ -91,9 +153,18 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '保存成功!'
+        const quesIds = []
+        for (let i = 0; i < this.list.length; i++) {
+          if (this.list[i].selected === true) {
+            quesIds.push(this.list[i].quesId)
+          }
+        }
+        addQuestionToPaper(this.paperId, quesIds).then(response => {
+          this.$message({
+            type: 'success',
+            message: '保存成功!'
+          })
+          this.$router.push('/test_manage/paper_manage')
         })
       }).catch(() => {
         this.$message({

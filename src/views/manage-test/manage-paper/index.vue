@@ -26,7 +26,7 @@
         <template slot-scope="scope">
           <el-button-group>
             <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.row.paperId, scope.$index)" />
-            <el-button type="warning" icon="el-icon-male" @click="onSelectQuestionClicked"/>
+            <el-button type="warning" icon="el-icon-male" @click="onSelectQuestionClicked(scope.row.paperId)" />
             <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.row.paperId, scope.$index)" />
           </el-button-group>
         </template>
@@ -103,8 +103,13 @@ export default {
       this.wordsDialog.visible = true
       this.wordsDialog.changeMode = 'add'
     },
-    onSelectQuestionClicked() {
-      this.$router.push('/test_manage/select_questions')
+    onSelectQuestionClicked(paperId) {
+      this.$router.push({
+        path: '/test_manage/select_questions',
+        query: {
+          paperId: paperId
+        }
+      })
     },
     onDeleteClicked(paperId, paperIndex) {
       this.$confirm('确认删除此试卷？此操作不可回退！', '提示', {
