@@ -11,12 +11,12 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="试卷ID" width="95">
+      <el-table-column align="center" label="考试ID" width="95">
         <template slot-scope="scope">
           {{ scope.row.testOptionId }}
         </template>
       </el-table-column>
-      <el-table-column label="试卷名称">
+      <el-table-column label="考试名称">
         <template slot-scope="scope">
           {{ scope.row.testOptionName }}
         </template>
@@ -59,7 +59,7 @@
       @close="wordsDialog.visible = false"
     >
       <el-form :model="form">
-        <el-form-item label="试卷名称" label-width="120px">
+        <el-form-item label="考试名称" label-width="120px">
           <el-input v-model="form.paperName" autocomplete="off" />
         </el-form-item>
         <el-form-item label="选择题数目" label-width="120px">
@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import {getList, addPaper, changePaperById, deletePaperById, submitWordsDialogResult} from '@/api/test/paper'
+import { getList, addPaper, changePaperById, deletePaperById, submitWordsDialogResult } from '@/api/test/paper'
 
 export default {
   data() {
@@ -121,7 +121,7 @@ export default {
       })
     },
     onCreateNewClicked() {
-      this.wordsDialog.title = '新增试卷'
+      this.wordsDialog.title = '新增考试'
       this.form.paperName = ''
       this.form.paperSelectNum = 0
       this.form.paperJudgeNum = 0
@@ -141,7 +141,7 @@ export default {
       })
     },
     onEditClicked(paper_id, paper_index) {
-      this.wordsDialog.title = '编辑试卷'
+      this.wordsDialog.title = '编辑考试'
       this.form.paperId = paper_id
       this.form.index = paper_index
       this.form.paperName = this.list[paper_index].testOptionName
@@ -186,7 +186,7 @@ export default {
             })
           }
         } else if (changeMode === 'add') {
-          console.log("3")
+          console.log('3')
           addPaper(temp).then(response => {
             console.log('Create new paper' + temp)
             this.list.push({
@@ -198,7 +198,6 @@ export default {
               duration: this.form.duration
             })
           })
-
         }
         this.wordsDialog.visible = false
       })
