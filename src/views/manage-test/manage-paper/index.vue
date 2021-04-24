@@ -13,35 +13,21 @@
     >
       <el-table-column align="center" label="试卷ID" width="95">
         <template slot-scope="scope">
-          {{ scope.$index }}
+          {{ scope.row.paperId }}
         </template>
       </el-table-column>
       <el-table-column label="试卷名称">
         <template slot-scope="scope">
-          {{ scope.row.title }}
-        </template>
-      </el-table-column>
-      <el-table-column label="开始时间" width="110" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.pageviews }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="时长" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.pageviews }}
-        </template>
-      </el-table-column>
-      <el-table-column label="总分" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.pageviews }}
+          {{ scope.row.paperName }}
         </template>
       </el-table-column>
 
       <el-table-column align="center" prop="created_at" label="操作" width="200">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.$index, scope.$index)" />
-            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.$index, scope.$index)" />
+            <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.row.paperId, scope.$index)" />
+            <el-button type="warning" icon="el-icon-male" @click="onSelectQuestionClicked"/>
+            <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.row.paperId, scope.$index)" />
           </el-button-group>
         </template>
       </el-table-column>
@@ -56,16 +42,7 @@
     >
       <el-form :model="form">
         <el-form-item label="试卷名称" label-width="120px">
-          <el-input v-model="form.examName" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="开始时间" label-width="120px">
-          <el-input v-model="form.startTime" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="时长" label-width="120px">
-          <el-input v-model="form.duration" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="总分" label-width="120px">
-          <el-input v-model="form.totalScore" autocomplete="off" />
+          <el-input v-model="form.paperName" autocomplete="off" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -79,24 +56,27 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
-import { deleteExamById, submitWordsDialogResult } from '@/api/test/exam'
+import {
+  getAllPapers,
+  addNewPaper,
+  changePaperName,
+  deletePaperById
+} from '@/api/test/paper'
 
 export default {
   data() {
     return {
-      list: null,
-      listLoading: true,
+      list: [],
+      listLoading: false,
       wordsDialog: {
         visible: false,
         title: '',
-        changeMode: 'add' // has two value: 'add' and 'update'
+        changeMode: 'add'
       },
       form: {
-        examName: '',
-        startTime: null,
-        duration: 0,
-        totalScore: 0
+        paperName: '',
+        paperId: 0,
+        paperIndex: 0
       }
     }
   },
@@ -106,50 +86,78 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
-        this.listLoading = false
+      getAllPapers().then(response => {
+        const responseResult = response.data.responseMap.result
+        for (let i = 0; i < responseResult.length; i++) {
+          this.list.push({
+            paperId: responseResult[i].paperId,
+            paperName: responseResult[i].paperName
+          })
+        }
       })
+      this.listLoading = false
     },
     onCreateNewClicked() {
       this.wordsDialog.title = '新增试卷'
-      this.form.examName = ''
-      this.form.startTime = ''
-      this.form.duration = ''
-      this.form.totalScore = ''
+      this.form.paperName = ''
       this.wordsDialog.visible = true
       this.wordsDialog.changeMode = 'add'
-
-      // var parsedobj = JSON.parse(JSON.stringify(this.form))
     },
-    onDeleteClicked(exam_id, exam_index) {
-      deleteExamById(exam_id).then(response => {
-        // if (response.data.result === 200) {
-        // eslint-disable-next-line no-constant-condition
-        if (true) {
-          console.log('delete exam success')
-          this.list.splice(exam_index, 1)
-        } else {
-          // console.log('删除失败')
+    onSelectQuestionClicked() {
+      this.$router.push('/test_manage/select_questions')
+    },
+    onDeleteClicked(paperId, paperIndex) {
+      this.$confirm('确认删除此试卷？此操作不可回退！', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const params = {
+          paperId: paperId
         }
+        deletePaperById(params).then(response => {
+          this.list.splice(paperIndex, 1)
+          this.$message({
+            type: 'success',
+            message: '删除成功！'
+          })
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
     },
-    onEditClicked(exam_id, exam_index) {
+    onEditClicked(paperId, paperIndex) {
       this.wordsDialog.title = '编辑试卷'
-      this.form.examName = this.list[exam_index].title
-      this.form.startTime = this.list[exam_index].pageviews
-      this.form.duration = this.list[exam_index].pageviews
-      this.form.totalScore = this.list[exam_index].pageviews
+      this.form.paperName = this.list[paperIndex].paperName
+      this.form.paperId = paperId
+      this.form.paperIndex = paperIndex
       this.wordsDialog.visible = true
       this.wordsDialog.changeMode = 'update'
     },
     wordsDialogConfirmOnClicked() {
-      const params = {
-        changeMode: this.wordsDialog.changeMode
-      }
-      submitWordsDialogResult(params).then(response => {
+      if (this.wordsDialog.changeMode === 'add') {
+        const paperName = {
+          paperName: this.form.paperName
+        }
+        addNewPaper(paperName).then(response => {
+          this.list.push({
+            paperId: response.data.responseMap.result,
+            paperName: this.form.paperName
+          })
+        })
         this.wordsDialog.visible = false
-      })
+      } else if (this.wordsDialog.changeMode === 'update') {
+        const paperName = {
+          paperName: this.form.paperName
+        }
+        changePaperName(this.form.paperId, paperName).then(response => {
+          this.list[this.form.paperIndex].paperName = paperName.paperName
+        })
+        this.wordsDialog.visible = false
+      }
     }
   }
 }
