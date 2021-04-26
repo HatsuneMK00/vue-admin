@@ -143,7 +143,7 @@ export const asyncRoutes = [
     path: '/test_user',
     component: Layout,
     name: 'TestUser',
-    meta: { title: '进行考试', icon: 'form', roles: ['admin', 'user'] },
+    meta: { title: '进行考试', icon: 'form', roles: ['user'] },
     children: [
       {
         path: 'take_test',
@@ -168,7 +168,7 @@ export const asyncRoutes = [
     component: Layout,
     name: 'CaseFront',
     redirect: '/case_front',
-    meta: { title: '病例学习', icon: 'form' },
+    meta: { title: '病例学习', icon: 'form' ,roles: ['user']},
     children: [
       {
         path: 'index',
@@ -190,6 +190,7 @@ export const asyncRoutes = [
     component: Layout,
     name: 'HospitalNavigation',
     redirect: '/hospital_navigation/index',
+    meta: { roles: ['user']},
     children: [
       {
         path: 'index',
