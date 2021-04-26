@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import { getList, addPaper, changePaperById, deletePaperById, submitWordsDialogResult } from '@/api/test/paper'
+import { getList, addPaper, changePaperById, deletePaperById, submitWordsDialogResult } from '@/api/test/exam'
 
 export default {
   data() {
@@ -173,7 +173,7 @@ export default {
       this.$router.push({
         path: '/test_manage/exam_manage/pick_user',
         query: {
-          id: exam_id
+          exam_id: exam_id
         }
       })
     },
