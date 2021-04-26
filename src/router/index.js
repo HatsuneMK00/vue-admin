@@ -171,6 +171,10 @@ export const asyncRoutes = [
     component: () => import('@/views/user-test/user-takeTest/inTest')
   },
   {
+    path: '/test_manage/exam_manage/pick_user',
+    component: () => import('@/views/manage-test/manage-exam/pickUser')
+  },
+  {
     path: '/case_front',
     component: Layout,
     name: 'CaseFront',
