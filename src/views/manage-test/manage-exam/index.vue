@@ -1,8 +1,18 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" style="margin-bottom: 10px;" @click="onCreateNewClicked">新建<i
-      class="el-icon-plus el-icon--right"
-    /></el-button>
+    <el-row>
+      <el-col span="6">
+        <el-button type="primary" style="margin-bottom: 10px;" @click="onCreateNewClicked">新建<i
+          class="el-icon-plus el-icon--right"
+        /></el-button>
+      </el-col>
+      <el-col span="6" offset="12">
+        <el-radio-group v-model="radio1">
+          <el-radio-button label="随机生成"></el-radio-button>
+          <el-radio-button label="勾选生成"></el-radio-button>
+        </el-radio-group>
+      </el-col>
+    </el-row>
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -21,19 +31,24 @@
           {{ scope.row.testOptionName }}
         </template>
       </el-table-column>
-      <el-table-column label="选择题数目" width="110" align="center">
+<!--      <el-table-column label="选择题数目" width="110" align="center">-->
+<!--        <template slot-scope="scope">-->
+<!--          {{ scope.row.selectNum }}-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+<!--      <el-table-column label="判断题数目" width="110" align="center">-->
+<!--        <template slot-scope="scope">-->
+<!--          {{ scope.row.judgeNum }}-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+<!--      <el-table-column label="简答题数目" width="110" align="center">-->
+<!--        <template slot-scope="scope">-->
+<!--          {{ scope.row.qaNum }}-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+      <el-table-column label="开始时间" width="110" align="center">
         <template slot-scope="scope">
-          {{ scope.row.selectNum }}
-        </template>
-      </el-table-column>
-      <el-table-column label="判断题数目" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.judgeNum }}
-        </template>
-      </el-table-column>
-      <el-table-column label="简答题数目" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.qaNum }}
+          <span>{{ scope.row.startDate }}</span>
         </template>
       </el-table-column>
       <el-table-column label="时长" width="110" align="center">
@@ -46,6 +61,7 @@
           <el-button-group>
             <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.row.testOptionId, scope.$index)" />
             <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.row.testOptionId, scope.$index)" />
+            <el-button type="warning" icon="el-icon-s-custom" @click="onPickClicked(scope.row.testOptionId, scope.$index)" />
           </el-button-group>
         </template>
       </el-table-column>
@@ -152,6 +168,16 @@ export default {
       this.wordsDialog.visible = true
       this.wordsDialog.changeMode = 'update'
     },
+
+    onPickClicked(exam_id, exam_index) {
+      this.$router.push({
+        path: '/test_manage/exam_manage/pick_user',
+        query: {
+          id: exam_id
+        }
+      })
+    },
+
     wordsDialogConfirmOnClicked() {
       const params = {
         id: this.form.paperId,
