@@ -3,6 +3,30 @@
     <div style="margin: 0 auto; text-align: center; height: 80px">
       <span style="font-size: 40px"><b>配置试卷题目</b></span>
     </div>
+    <el-row style="margin-bottom: 10px">
+      <el-col :span="6">
+        <el-dropdown style="margin-bottom: 8px" @command="handleCommand">
+          <el-button type="primary">
+            {{ dropdownTitle }}<i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="选择题">选择题</el-dropdown-item>
+            <el-dropdown-item command="判断题">判断题</el-dropdown-item>
+            <el-dropdown-item command="问答题">问答题</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-col>
+      <el-col :span="6" :offset="12">
+        <el-row :gutter="10">
+          <el-col :span="16">
+            <el-input v-model="searchText"></el-input>
+          </el-col>
+          <el-col :span="2">
+            <el-button type="primary" @click="onSearchClicked">搜索</el-button>
+          </el-col>
+        </el-row>
+      </el-col>
+    </el-row>
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -13,7 +37,7 @@
     >
       <el-table-column align="center" prop="created_at" label="勾选" width="80">
         <template slot-scope="scope">
-          <el-checkbox v-model="scope.row.selected" />
+          <el-checkbox v-model="scope.row.selected"/>
         </template>
       </el-table-column>
       <el-table-column align="center" label="ID" width="60">
@@ -59,7 +83,7 @@ import {
 } from '@/api/test/question'
 import {
   getPaperQuestionsById,
-  addQuestionToPaper
+  addQuestionToPaper, fetchQuesByUnionSearch
 } from '@/api/test/paper'
 
 function sleep(ms) {
@@ -73,7 +97,10 @@ export default {
     return {
       list: [],
       listLoading: false,
-      paperId: -1
+      paperId: -1,
+      searchText: '',
+      dropdownTitle: '选择病例类别',
+      command: ''
     }
   },
   created() {
@@ -118,6 +145,19 @@ export default {
             }
           }
         })
+      })
+    },
+    showSearchResult() {
+      console.log("重新渲染")
+      getPaperQuestionsById(this.paperId).then(response => {
+        const responseResult = response.data.responseMap.questions
+        for (let i = 0; i < responseResult.length; i++) {
+          for (let j = 0; j < this.list.length; j++) {
+            if (responseResult[i].quesId === this.list[j].quesId) {
+              this.list[j].selected = true
+            }
+          }
+        }
       })
     },
     back() {
@@ -172,6 +212,53 @@ export default {
           message: '已取消保存'
         })
       })
+    },
+    onSearchClicked() {
+      const params = {
+        type: this.command,
+        search: this.searchText
+      }
+      const typeContent = this.command === null || this.command === '' ? "hasNoType" : "hasType"
+      const searchContent = this.searchText === null || this.searchText === '' ? "hasNoSearch" : "hasSearch"
+      if (typeContent === "hasType" && searchContent === "hasSearch") {
+        console.log(1)
+        fetchQuesByUnionSearch(params).then(response => {
+          console.log(1.1)
+          this.list = response.data.responseMap.result
+          this.listLoading = false
+          // this.dropdownTitle = params.type
+          this.showSearchResult()
+        })
+      } else if (typeContent === "hasNoType" && searchContent === "hasSearch") {
+        console.log(2)
+        fetchQuesByUnionSearch({search: this.searchText}).then(response => {
+          console.log(2.1)
+          this.list = response.data.responseMap.result
+          this.listLoading = false
+          this.showSearchResult()
+          // this.dropdownTitle = params.type
+        })
+      } else if (typeContent === "hasType" && searchContent === "hasNoSearch") {
+        console.log(3)
+        fetchQuesByUnionSearch({type: this.command}).then(response => {
+          console.log(3.1)
+          this.list = response.data.responseMap.result
+          this.listLoading = false
+          // this.dropdownTitle = params.type
+          this.showSearchResult()
+        })
+      }
+    },
+    handleCommand(command) {
+      if (command === '选择题') {
+        this.command = 'select'
+      } else if (command === '判断题') {
+        this.command = 'judge'
+      } else if (command === '问答题') {
+        this.command = 'qa'
+      }
+      this.dropdownTitle = command
+      console.log(this.command)
     }
   }
 }
