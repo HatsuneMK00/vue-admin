@@ -326,6 +326,9 @@ export default {
           // }
           const params = {
             testOptionName: this.examName,
+            selectNum: 0,
+            judgeNum: 0,
+            qaNum: 0,
             duration: this.duration,
             paperId: this.value,
             startDate: dateFormat(this.timeValue)
@@ -359,6 +362,9 @@ export default {
         } else if (this.examType === '勾选生成') {
           const exam_data = {
             testOptionName: this.examName,
+            selectNum: 0,
+            judgeNum: 0,
+            qaNum: 0,
             paperId: this.value,
             duration: this.duration,
             startDate: dateFormat(this.timeValue)
