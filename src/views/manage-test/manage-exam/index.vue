@@ -40,7 +40,7 @@
 <!--          {{ scope.row.qaNum }}-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-      <el-table-column label="开始时间" width="110" align="center">
+      <el-table-column label="开始时间" width="180" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.startDate }}</span>
         </template>
@@ -150,6 +150,17 @@ import {
   getAllPaper, getPaperIdByTestOptionId, getPaperNameByPaperId
 } from '@/api/test/exam'
 
+function dateFormat(time) {
+  const date = new Date(time)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
+  const day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+  const hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours()
+  const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()
+  const seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()
+  return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
+}
+
 export default {
   data() {
     return {
@@ -183,12 +194,17 @@ export default {
   },
   created() {
     this.fetchData()
+
   },
   methods: {
     fetchData() {
       this.listLoading = true
       getList().then(response => {
         this.list = response.data.responseMap.result
+        for (let i = 0; i < this.list.length; i++) {
+          this.list[i].startDate = dateFormat(this.list[i].startDate)
+        }
+        // console.log("hahahh" + this.list[0].startDate)
         this.listLoading = false
       })
       getAllPaper().then(response => {
@@ -230,10 +246,10 @@ export default {
     onEditClicked(exam_id, exam_index) {
       this.examId = exam_id
       this.wordsDialog.title = '编辑考试'
-      this.timeValue = this.list[exam_index].startDate
-      console.log("接收时间")
-      console.log(this.timeValue)
-      console.log(typeof this.timeValue)
+      this.timeValue = dateFormat(this.list[exam_index].startDate)
+      // console.log("接收时间")
+      // console.log(this.timeValue)
+      // console.log(typeof this.timeValue)
       let sum = this.list[exam_index].selectNum + this.list[exam_index].judgeNum + this.list[exam_index].qaNum
       // console.log(sum)
       // console.log(this.list[paper_index].paperSelectNum)
@@ -285,20 +301,20 @@ export default {
             judgeNum: this.form.examJudgeNum,
             qaNum: this.form.examQaNum,
             duration: this.form.duration,
-            startDate: this.timeValue
+            startDate: dateFormat(this.timeValue)
           }
           // console.log("写入时间")
           // console.log(this.timeValue)
           // console.log(typeof this.timeValue)
           addPaper(params).then(response => {
             this.list.push({
-              testOptionId: response.data.result,
+              testOptionId: response.data.responseMap.result,
               testOptionName: this.form.examName,
               // selectNum: this.form.examSelectNum,
               // judgeNum: this.form.examJudgeNum,
               // qaNum: this.form.examQaNum,
               duration: this.form.duration,
-              startDate: this.timeValue
+              startDate: dateFormat(this.timeValue)
             })
           })
           // this.wordsDialog.visible = false
@@ -312,14 +328,14 @@ export default {
             testOptionName: this.examName,
             duration: this.duration,
             paperId: this.value,
-            startDate: this.timeValue
+            startDate: dateFormat(this.timeValue)
           }
           addPaper(params).then(response => {
             this.list.push({
-              testOptionId: response.data.result,
+              testOptionId: response.data.responseMap.result,
               testOptionName: this.examName,
               duration: this.duration,
-              startDate: this.timeValue
+              startDate: dateFormat(this.timeValue)
             })
           })
           // this.wordsDialog.visible = false
@@ -332,7 +348,7 @@ export default {
             judgeNum: this.form.examJudgeNum,
             qaNum: this.form.examQaNum,
             duration: this.form.duration,
-            startDate: this.timeValue
+            startDate: dateFormat(this.timeValue)
           }
           changePaperById(this.examId, exam_data).then(response => {
             this.list[this.form.index].testOptionName = exam_data.testOptionName
@@ -345,7 +361,7 @@ export default {
             testOptionName: this.examName,
             paperId: this.value,
             duration: this.duration,
-            startDate: this.timeValue
+            startDate: dateFormat(this.timeValue)
           }
           changePaperById(this.examId, exam_data).then(response => {
             this.list[this.index].testOptionName = exam_data.testOptionName
