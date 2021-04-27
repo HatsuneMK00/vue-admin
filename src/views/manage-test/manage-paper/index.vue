@@ -26,7 +26,7 @@
         <template slot-scope="scope">
           <el-button-group>
             <el-button type="primary" icon="el-icon-edit" @click="onEditClicked(scope.row.paperId, scope.$index)" />
-            <el-button type="warning" icon="el-icon-male" @click="onSelectQuestionClicked(scope.row.paperId)" />
+            <el-button type="warning" icon="el-icon-document-checked" @click="onSelectQuestionClicked(scope.row.paperId)" />
             <el-button type="danger" icon="el-icon-delete" @click="onDeleteClicked(scope.row.paperId, scope.$index)" />
           </el-button-group>
         </template>
