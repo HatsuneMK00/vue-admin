@@ -50,7 +50,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '主页', icon: 'dashboard' }
+      meta: { title: '主页', icon: 'el-icon-s-home' }
     }]
   }
 ]
@@ -126,7 +126,7 @@ export const asyncRoutes = [
         path: 'index',
         name: 'CaseManageIndex',
         component: () => import('@/views/manage-case/index'),
-        meta: { title: '病例管理', icon: 'table' }
+        meta: { title: '病例管理', icon: 'el-icon-s-management' }
       }
     ]
   },
@@ -142,7 +142,7 @@ export const asyncRoutes = [
         path: 'index',
         name: 'StructureManageIndex',
         component: () => import('@/views/manage-structure/index'),
-        meta: { title: '结构管理', icon: 'table' }
+        meta: { title: '结构管理', icon: 'tree' }
       }
     ]
   },
@@ -150,7 +150,7 @@ export const asyncRoutes = [
     path: '/test_user',
     component: Layout,
     name: 'TestUser',
-    meta: { title: '进行考试', icon: 'form', roles: ['user'] },
+    meta: { title: '进行考试', icon: 'el-icon-document-checked', roles: ['user'] },
     children: [
       {
         path: 'take_test',
@@ -179,7 +179,7 @@ export const asyncRoutes = [
     component: Layout,
     name: 'CaseFront',
     redirect: '/case_front',
-    meta: { title: '病例学习', icon: 'form' ,roles: ['user']},
+    meta: { title: '病例学习', icon: 'el-icon-first-aid-kit' ,roles: ['user']},
     children: [
       {
         path: 'index',
@@ -207,7 +207,7 @@ export const asyncRoutes = [
         path: 'index',
         name: 'HospitalNavigationIndex',
         component: () => import('@/views/hospital_navigation/index'),
-        meta: { title: '3D医院导览', icon: 'table' }
+        meta: { title: '3D医院导览',icon:"el-icon-guide" }
       }
     ]
   },
