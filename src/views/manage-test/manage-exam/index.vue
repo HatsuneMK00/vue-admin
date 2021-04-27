@@ -246,15 +246,16 @@ export default {
     onEditClicked(exam_id, exam_index) {
       this.examId = exam_id
       this.wordsDialog.title = '编辑考试'
-      this.timeValue = dateFormat(this.list[exam_index].startDate)
+      this.timeValue = this.list[exam_index].startDate
       // console.log("接收时间")
       // console.log(this.timeValue)
       // console.log(typeof this.timeValue)
       let sum = this.list[exam_index].selectNum + this.list[exam_index].judgeNum + this.list[exam_index].qaNum
-      // console.log(sum)
+      this.examType = sum > 0 ? '随机生成' : '勾选生成'
+      console.log(sum)
       // console.log(this.list[paper_index].paperSelectNum)
       if (sum > 0) {
-        this.examType = '随机生成'
+        // this.examType = '随机生成'
         this.form.examSelectNum = this.list[exam_index].selectNum
         this.form.examJudgeNum = this.list[exam_index].judgeNum
         this.form.examQaNum = this.list[exam_index].qaNum
@@ -264,7 +265,7 @@ export default {
         // console.log(this.list[paper_index])
         this.form.duration = this.list[exam_index].duration
       } else {
-        this.examType = '勾选生成'
+        // this.examType = '勾选生成'
         this.index = exam_index
         this.examName = this.list[exam_index].testOptionName
         getPaperIdByTestOptionId(exam_id).then(response => {
@@ -301,7 +302,7 @@ export default {
             judgeNum: this.form.examJudgeNum,
             qaNum: this.form.examQaNum,
             duration: this.form.duration,
-            startDate: dateFormat(this.timeValue)
+            startDate: this.timeValue
           }
           // console.log("写入时间")
           // console.log(this.timeValue)
@@ -314,7 +315,7 @@ export default {
               // judgeNum: this.form.examJudgeNum,
               // qaNum: this.form.examQaNum,
               duration: this.form.duration,
-              startDate: dateFormat(this.timeValue)
+              startDate: this.timeValue
             })
           })
           // this.wordsDialog.visible = false
@@ -331,18 +332,19 @@ export default {
             qaNum: 0,
             duration: this.duration,
             paperId: this.value,
-            startDate: dateFormat(this.timeValue)
+            startDate: this.timeValue
           }
           addPaper(params).then(response => {
             this.list.push({
               testOptionId: response.data.responseMap.result,
               testOptionName: this.examName,
               duration: this.duration,
-              startDate: dateFormat(this.timeValue)
+              startDate: this.timeValue
             })
           })
           // this.wordsDialog.visible = false
         }
+        location.reload();
       } else if (this.wordsDialog.changeMode === 'update') {
         if (this.examType === '随机生成') {
           const exam_data = {
@@ -351,7 +353,7 @@ export default {
             judgeNum: this.form.examJudgeNum,
             qaNum: this.form.examQaNum,
             duration: this.form.duration,
-            startDate: dateFormat(this.timeValue)
+            startDate: this.timeValue
           }
           changePaperById(this.examId, exam_data).then(response => {
             this.list[this.form.index].testOptionName = exam_data.testOptionName
@@ -367,7 +369,7 @@ export default {
             qaNum: 0,
             paperId: this.value,
             duration: this.duration,
-            startDate: dateFormat(this.timeValue)
+            startDate: this.timeValue
           }
           changePaperById(this.examId, exam_data).then(response => {
             this.list[this.index].testOptionName = exam_data.testOptionName
