@@ -3,6 +3,31 @@
     <div style="margin: 0 auto; text-align: center; height: 80px">
       <span style="font-size: 40px"><b>配置试卷题目</b></span>
     </div>
+    <el-row style="margin-bottom: 10px">
+      <el-col :span="6">
+        <el-dropdown style="margin-bottom: 8px" @command="handleCommand">
+          <el-button type="primary">
+            {{ dropdownTitle }}<i class="el-icon-arrow-down el-icon--right" />
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="all">全部</el-dropdown-item>
+            <el-dropdown-item command="select">选择题</el-dropdown-item>
+            <el-dropdown-item command="judge">判断题</el-dropdown-item>
+            <el-dropdown-item command="qa">问答题</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-col>
+      <el-col :span="6" :offset="12">
+        <el-row :gutter="10">
+          <el-col :span="16">
+            <el-input v-model="searchText" />
+          </el-col>
+          <el-col :span="2">
+            <el-button type="primary" @click="onSearchClicked">搜索</el-button>
+          </el-col>
+        </el-row>
+      </el-col>
+    </el-row>
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -59,7 +84,7 @@ import {
 } from '@/api/test/question'
 import {
   getPaperQuestionsById,
-  addQuestionToPaper
+  addQuestionToPaper, fetchQuesByUnionSearch
 } from '@/api/test/paper'
 
 function sleep(ms) {
@@ -73,12 +98,19 @@ export default {
     return {
       list: [],
       listLoading: false,
-      paperId: -1
+      paperId: -1,
+      searchText: '',
+      dropdownTitle: '选择病例类别',
+      command: '',
+      quesListIsSelected: []
     }
   },
   created() {
     this.paperId = this.$route.query.paperId
     this.fetchData()
+    sleep(200).then(() => {
+      this.handleCommand('all')
+    })
   },
   mounted() {
     if (window.history && window.history.pushState) {
@@ -95,6 +127,10 @@ export default {
       getQuestionList().then(response => {
         const responseResult = response.data.responseMap.result
         for (let i = 0; i < responseResult.length; i++) {
+          this.quesListIsSelected.push({
+            quesId: responseResult[i].quesId,
+            selected: false
+          })
           this.list.push({
             quesId: responseResult[i].quesId,
             type: responseResult[i].type,
@@ -113,6 +149,7 @@ export default {
           for (let i = 0; i < responseResult.length; i++) {
             for (let j = 0; j < this.list.length; j++) {
               if (responseResult[i].quesId === this.list[j].quesId) {
+                this.quesListIsSelected[j].selected = true
                 this.list[j].selected = true
               }
             }
@@ -172,6 +209,117 @@ export default {
           message: '已取消保存'
         })
       })
+    },
+    setSelectedList() {
+      for (let i = 0; i < this.list.length; i++) {
+        for (let j = 0; j < this.quesListIsSelected.length; j++) {
+          if (this.quesListIsSelected[j].quesId === this.list[i].quesId) {
+            this.quesListIsSelected[j].selected = this.list[i].selected
+          }
+        }
+      }
+    },
+    onSearchClicked() {
+      if (this.command === 'all' && this.searchText !== '') {
+        const params = {
+          search: this.searchText
+        }
+        this.setSelectedList()
+        this.unionSearch(params)
+        this.setIfSelected()
+      } else if (this.command !== 'all' && this.searchText !== '') {
+        const params = {
+          type: this.command,
+          search: this.searchText
+        }
+        this.setSelectedList()
+        this.unionSearch(params)
+        this.setIfSelected()
+      } else if (this.command !== 'all' && this.searchText === '') {
+        const params = {
+          type: this.command
+        }
+        this.setSelectedList()
+        this.unionSearch(params)
+        this.setIfSelected()
+      }
+    },
+    unionSearch(params) {
+      fetchQuesByUnionSearch(params).then(response => {
+        const responseResult = response.data.responseMap.result
+        this.list = []
+        for (let i = 0; i < responseResult.length; i++) {
+          this.list.push({
+            quesId: responseResult[i].quesId,
+            type: responseResult[i].type,
+            tag: responseResult[i].tag,
+            descrip: responseResult[i].descrip,
+            score: responseResult[i].score,
+            answer: responseResult[i].answer,
+            selected: false
+          })
+        }
+      })
+    },
+    setParamsAndUnionSearch(command) {
+      if (this.searchText === '') {
+        const params = {
+          type: command
+        }
+        this.unionSearch(params)
+      } else {
+        const params = {
+          type: command,
+          search: this.searchText
+        }
+        this.unionSearch(params)
+      }
+    },
+    setIfSelected() {
+      sleep(200).then(() => {
+        for (let i = 0; i < this.list.length; i++) {
+          for (let j = 0; j < this.quesListIsSelected.length; j++) {
+            if (this.quesListIsSelected[j].quesId === this.list[i].quesId) {
+              this.list[i].selected = this.quesListIsSelected[j].selected
+            }
+          }
+        }
+      })
+    },
+    handleCommand(command) {
+      this.command = command
+      this.setSelectedList()
+      if (command === 'select') {
+        this.dropdownTitle = '选择题'
+        this.setParamsAndUnionSearch(command)
+        this.setIfSelected()
+      } else if (command === 'judge') {
+        this.dropdownTitle = '判断题'
+        this.setParamsAndUnionSearch(command)
+        this.setIfSelected()
+      } else if (command === 'qa') {
+        this.dropdownTitle = '问答题'
+        this.setParamsAndUnionSearch(command)
+        this.setIfSelected()
+      } else if (command === 'all') {
+        this.dropdownTitle = '全部'
+        getQuestionList().then(response => {
+          const responseResult = response.data.responseMap.result
+          this.list = []
+          for (let i = 0; i < responseResult.length; i++) {
+            this.list.push({
+              quesId: responseResult[i].quesId,
+              type: responseResult[i].type,
+              tag: responseResult[i].tag,
+              descrip: responseResult[i].descrip,
+              score: responseResult[i].score,
+              answer: responseResult[i].answer,
+              selected: false
+            })
+          }
+        })
+        this.setIfSelected()
+      }
     }
   }
 }
