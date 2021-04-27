@@ -234,13 +234,28 @@ export default {
       this.wordsDialog.changeMode = 'add'
     },
     onDeleteClicked(exam_id, exam_index) {
-      deletePaperById({ testOptionId: exam_id }).then(response => {
-        // if (response.data.status === 200) {
-          console.log('delete paper success')
-          this.list.splice(exam_index, 1)
-        // } else {
-        //   alert('删除失败')
-        // }
+      this.$confirm('确认删除本场考试？此操作不可回退！', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deletePaperById({testOptionId: exam_id}).then(response => {
+          if (response.data.status === 200) {
+            // console.log('delete paper success')
+            this.$message({
+              type: 'success',
+              message: '删除成功！'
+            })
+            this.list.splice(exam_index, 1)
+          } else {
+            alert('删除失败')
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
     },
     onEditClicked(exam_id, exam_index) {
